@@ -7,11 +7,12 @@ in-progress
 1
 
 ## Current Plan
-01-02 complete — next: 01-03 (if exists) or Phase 2
+01-03 complete — Phase 1 fully complete, next: Phase 2
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
 - 01-02: Quest completion level-up persistence (2026-03-15)
+- 01-03: UserService security (server route writes), starter items on awakening, intensity rank fix (2026-03-15)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -22,6 +23,8 @@ in-progress
 - Reuse rankFromLevelAndXp from xpEngine rather than duplicating formula
 - Use .maybeSingle() not .single() for Supabase queries where row may be absent
 - getUserId() helpers must only read Authorization Bearer header, never URL query params
+- createUser must use fetch(/api/user) for writes — never direct anon-key inserts from client services
+- Starter item grant failure is non-fatal — wrapped in try/catch, does not block user creation success
 
 ## Blockers
 - None
@@ -31,5 +34,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 01-01-PLAN.md (API route safety fixes)
-Date: 2026-03-15T12:00:00Z
+Stopped at: Completed 01-03-PLAN.md (UserService security + starter items + intensity rank fix)
+Date: 2026-03-15T12:15:00Z
