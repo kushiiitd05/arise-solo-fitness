@@ -41,13 +41,48 @@ export async function POST(req: NextRequest) {
     .eq("user_id", userId)
     .eq("quest_date", date);
 
-  // Award XP to user
+  // Level-up state (declared outside if block so they're in scope for the response)
+  let leveledUp = false;
+  let newLevel = 1;
+  let newRank: string = "E";
+  let statPointsAwarded = 0;
+
+  // Award XP to user and process level-ups
   const { data: user } = await supabase.from("users").select("current_xp, level").eq("id", userId).maybeSingle();
   if (user) {
+    let xp = user.current_xp + xpEarned;
+    let level = user.level;
+
+    // Level-up loop
+    while (xp >= xpForLevel(level)) {
+      xp -= xpForLevel(level);
+      level++;
+      statPointsAwarded += 3;
+      leveledUp = true;
+    }
+
+    newLevel = level;
+    newRank = rankFromLevelAndXp(level, user.current_xp + xpEarned);
+
     await supabase
       .from("users")
-      .update({ current_xp: user.current_xp + xpEarned })
+      .update({ current_xp: xp, level, hunter_rank: newRank })
       .eq("id", userId);
+
+    // Award stat points on level-up
+    if (statPointsAwarded > 0) {
+      const { data: statRow } = await supabase
+        .from("user_stats")
+        .select("available_stat_points")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (statRow) {
+        await supabase
+          .from("user_stats")
+          .update({ available_stat_points: (statRow.available_stat_points || 0) + statPointsAwarded })
+          .eq("user_id", userId);
+      }
+    }
   }
 
   // Update total XP earned in stats
@@ -68,5 +103,9 @@ export async function POST(req: NextRequest) {
     allCompleted,
     penaltyRisk,
     quests: updatedQuests,
+    leveledUp,
+    newLevel,
+    newRank,
+    statPointsAwarded,
   });
 }
