@@ -61,11 +61,11 @@ Plans:
 ### Phase 4: Feature Completion
 **Goal**: Wire remaining UI panels (Arena unlock gate, mobile nav, Achievement Hall, Guild Hall)
 **Depends on**: Phase 3
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: Arena unlock gate + mobile bottom navigation
-- [ ] 04-02: Achievement Hall + Guild Hall wiring
+- [ ] 04-01-PLAN.md — Arena rank gate (Rank D unlock, XP progress bar, unlock flash) + mobile bottom navigation (4 tabs, fixed bottom-0)
+- [ ] 04-02-PLAN.md — Achievement Hall overlay (STATUS panel card + full-screen slide-in) + GUILD desktop tab + GuildHall cleanup fix
 
 ### Phase 5: QA & Hardening
 **Goal**: Full E2E test of signup→quest→levelup flow, RLS audit, error boundaries
