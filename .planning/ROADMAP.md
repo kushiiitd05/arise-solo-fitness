@@ -10,7 +10,7 @@ loop, and UI — delivering a shippable v1.0 of the Solo Leveling fitness experi
 
 - [x] **Phase 1: Foundation Fixes** - Fix root-cause bugs that break level-up persistence, API security, and crash-causing DB calls
 - [ ] **Phase 2: Data Completeness** - Seed starter inventory, expand shadow roster, wire leaderboard
-- [ ] **Phase 3: Gameplay Loop Hardening** - Server-side writes for all state mutations, stat wiring in UI
+- [x] **Phase 3: Gameplay Loop Hardening** - Server-side writes for all state mutations, stat wiring in UI (completed 2026-03-15)
 - [ ] **Phase 4: Feature Completion** - Arena unlock, mobile nav, Achievements, Guild Hall wiring
 - [ ] **Phase 5: QA & Hardening** - E2E test, RLS audit, error boundaries
 

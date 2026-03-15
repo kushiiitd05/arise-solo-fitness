@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-01-PLAN.md — inventory and shadows API routes
-last_updated: "2026-03-15T15:21:23.561Z"
+stopped_at: Completed 03-02-PLAN.md — quest update route + Dashboard stats wiring
+last_updated: "2026-03-15T15:22:16.867Z"
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # GSD State
@@ -48,6 +48,8 @@ in-progress
 - Replace shadcn CSS tokens with ARISE hex palette — project uses explicit hex values, not CSS variables
 - [Phase 03-gameplay-loop-hardening]: Copy getUserId() locally into each route — self-contained files, no shared helper coupling
 - [Phase 03-gameplay-loop-hardening]: Use supabaseServer directly in routes, not service-layer functions (which use anon client)
+- [Phase 03-gameplay-loop-hardening]: Use xp_reward field name (DailyQuestItem interface) not xp in quest update route
+- [Phase 03-gameplay-loop-hardening]: wasAllCompleted guard prevents double XP grant on repeated POST /api/quests/update calls
 
 ## Blockers
 - None
@@ -57,5 +59,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 03-01-PLAN.md — inventory and shadows API routes
+Stopped at: Completed 03-02-PLAN.md — quest update route + Dashboard stats wiring
 Date: 2026-03-15T14:37:00Z
