@@ -39,11 +39,11 @@ Plans:
   1. New user after awakening sees 5 starter items in STORAGE tab
   2. Shadow extraction has 15+ unique shadows available
   3. Leaderboard panel visible on Dashboard
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Expand SHADOWS_DB + seed items catalog
-- [ ] 02-02: Wire Leaderboard into Dashboard
+- [ ] 02-01-PLAN.md — Expand SHADOWS_DB to 17 entries with stable UUIDs, create supabase/seed-shadows.sql, fix STARTER_ITEMS column names and enum values
+- [ ] 02-02-PLAN.md — Fix Leaderboard.tsx bugs (import order, channel cleanup, CSS tokens), wire Leaderboard modal into Dashboard STATUS tab
 
 ### Phase 3: Gameplay Loop Hardening
 **Goal**: Move all client-side DB writes through server API routes, wire stamina/mana stats in Dashboard header
