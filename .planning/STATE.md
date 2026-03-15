@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-15T12:40:50.647Z"
+stopped_at: Completed 03-01-PLAN.md — inventory and shadows API routes
+last_updated: "2026-03-15T15:21:23.561Z"
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
 ---
 
 # GSD State
@@ -18,10 +18,10 @@ progress:
 in-progress
 
 ## Current Phase
-2
+3
 
 ## Current Plan
-02-02 complete — Phase 2 fully complete, next: Phase 3
+03-01 complete — next: 03-02
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -29,6 +29,7 @@ in-progress
 - 01-03: UserService security (server route writes), starter items on awakening, intensity rank fix (2026-03-15)
 - 02-01: Shadow roster expanded to 17 UUID-keyed entries + STARTER_ITEMS column names fixed (2026-03-15)
 - 02-02: Leaderboard.tsx bugs fixed (import, cleanup, CSS tokens) + Dashboard WORLD_RANKINGS panel wired (2026-03-15)
+- 03-01: GET /api/inventory and GET /api/shadows server routes using supabaseServer with joined item/shadow data (2026-03-15)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -45,6 +46,8 @@ in-progress
 - STARTER_ITEMS column names must match Supabase migration schema exactly (item_type, effects, emoji — not type, stat_bonus, image_url)
 - Use sub.unsubscribe() not supabase.removeChannel() — the channel object owns cleanup in Supabase v2
 - Replace shadcn CSS tokens with ARISE hex palette — project uses explicit hex values, not CSS variables
+- [Phase 03-gameplay-loop-hardening]: Copy getUserId() locally into each route — self-contained files, no shared helper coupling
+- [Phase 03-gameplay-loop-hardening]: Use supabaseServer directly in routes, not service-layer functions (which use anon client)
 
 ## Blockers
 - None
@@ -54,5 +57,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Phase 3 context gathered
+Stopped at: Completed 03-01-PLAN.md — inventory and shadows API routes
 Date: 2026-03-15T14:37:00Z
