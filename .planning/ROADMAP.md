@@ -3,8 +3,8 @@
 ## Overview
 
 Stabilize the ARISE application from a partially-broken prototype into a fully-functional
-core game loop. Five phases harden the authentication, database sync, API routes, gameplay
-loop, and UI — delivering a shippable v1.0 of the Solo Leveling fitness experience.
+core game loop, then build out all starred systems — delivering a complete Solo Leveling
+fitness experience with AI, combat, ranked progression, and manhwa rewards.
 
 ## Phases
 
@@ -12,7 +12,16 @@ loop, and UI — delivering a shippable v1.0 of the Solo Leveling fitness experi
 - [ ] **Phase 2: Data Completeness** - Seed starter inventory, expand shadow roster, wire leaderboard
 - [x] **Phase 3: Gameplay Loop Hardening** - Server-side writes for all state mutations, stat wiring in UI (completed 2026-03-15)
 - [ ] **Phase 4: Feature Completion** - Arena unlock, mobile nav, Achievements, Guild Hall wiring
-- [ ] **Phase 5: QA & Hardening** - E2E test, RLS audit, error boundaries
+- [ ] **Phase 5: Notification System** - Fix broken auto-dismiss notifications, unify notification layer across all game events
+- [ ] **Phase 6: Rank XP Calculation System** - Design multi-event rank XP model (workouts, quests, boss kills all contribute to rank progression)
+- [ ] **Phase 7: Full Rank Trial System** - Formal workout challenge to advance rank (workout → trial → pass → rank up), depends on Phase 6
+- [ ] **Phase 8: Dynamic Daily Quest Generation** - Level-adaptive quest generation engine replacing fixed templates
+- [ ] **Phase 9: Inventory Item Effects** - Permanent and temporary stat bonuses from equipped items (completes Phase 2 seed work)
+- [ ] **Phase 10: Shadow Army Mechanics** - Formalized shadow extraction/reward flow, shadow stats, army composition rules
+- [ ] **Phase 11: Battle System Backend** - Arena battles via backend API using real player stats, replacing client-side simulation
+- [ ] **Phase 12: Manhwa Chapter Reward System** - Chapter unlock UI on quest/boss completion, reader integration, reward trigger events
+- [ ] **Phase 13: Ollama AI Integration** - Dynamic monster names, boss personalities, quest descriptions, workout challenge variations via local LLM
+- [ ] **Phase 14: QA & Hardening** - E2E test, RLS audit, error boundaries across full system
 
 ## Phase Details
 
@@ -67,11 +76,92 @@ Plans:
 - [ ] 04-01-PLAN.md — Arena rank gate (Rank D unlock, XP progress bar, unlock flash) + mobile bottom navigation (4 tabs, fixed bottom-0)
 - [ ] 04-02-PLAN.md — Achievement Hall overlay (STATUS panel card + full-screen slide-in) + GUILD desktop tab + GuildHall cleanup fix
 
-### Phase 5: QA & Hardening
-**Goal**: Full E2E test of signup→quest→levelup flow, RLS audit, error boundaries
+### Phase 5: Notification System
+**Goal**: Fix broken auto-dismiss notification layer — notifications currently stick on screen. Unify all game events (quest completion, stat allocation, reward unlock, rank up, system alerts) through a single dismissable notification system
 **Depends on**: Phase 4
 **Plans**: TBD
 
 Plans:
-- [ ] 05-01: Error boundaries + loading state audit
-- [ ] 05-02: RLS policy verification + auth flow E2E test
+- [ ] 05-01: Diagnose stuck notification bug, implement auto-dismiss with configurable timeout
+- [ ] 05-02: Wire all game events through unified notification system
+
+### Phase 6: Rank XP Calculation System
+**Goal**: Design and implement a multi-event rank XP model where workouts, quest completions, and boss kills all contribute to rank progression (replacing the current level-only formula)
+**Depends on**: Phase 5
+**Plans**: TBD
+
+Plans:
+- [ ] 06-01: Design rank XP schema and calculation engine (events → rank XP → rank thresholds)
+- [ ] 06-02: Wire rank XP events from quest completion, boss kills, and workouts
+
+### Phase 7: Full Rank Trial System
+**Goal**: Formal progression gate — hunters must complete a rank trial (specific workout challenge) to advance rank. Implements the trial flow: initiate trial → complete workout → pass/fail → rank advance
+**Depends on**: Phase 6
+**Plans**: TBD
+
+Plans:
+- [ ] 07-01: Trial initiation UI + trial workout challenge generation
+- [ ] 07-02: Trial pass/fail evaluation + rank advancement + reward dispatch
+
+### Phase 8: Dynamic Daily Quest Generation
+**Goal**: Replace fixed quest templates with a level-adaptive generation engine. Quests scale in difficulty and variety based on hunter level and recent completion history
+**Depends on**: Phase 7
+**Plans**: TBD
+
+Plans:
+- [ ] 08-01: Quest generation algorithm (difficulty scaling, variety rules)
+- [ ] 08-02: Replace fixed templates with generated quests, wire to QuestBoard UI
+
+### Phase 9: Inventory Item Effects
+**Goal**: Equippable items grant real permanent or temporary stat bonuses (STR, AGI, VIT, INT, PER). Completes the inventory system seeded in Phase 2 — items are currently cosmetic only
+**Depends on**: Phase 4
+**Plans**: TBD
+
+Plans:
+- [ ] 09-01: Item effect engine (effect schema, apply/remove stat deltas, persist equipped state)
+- [ ] 09-02: Wire equipped items into Dashboard stat display and quest calculations
+
+### Phase 10: Shadow Army Mechanics
+**Goal**: Formalize shadow extraction and army management — extraction trigger events, shadow stats, army composition rules, and army power calculations
+**Depends on**: Phase 4
+**Plans**: TBD
+
+Plans:
+- [ ] 10-01: Shadow extraction trigger system + shadow stat schema
+- [ ] 10-02: Army composition rules + army power display in SHADOWS panel
+
+### Phase 11: Battle System Backend
+**Goal**: Replace client-side Arena battle simulation with a real backend — battles use actual player stats, matchmaking, and server-authoritative outcomes
+**Depends on**: Phase 10
+**Plans**: TBD
+
+Plans:
+- [ ] 11-01: Battle API route + stat-based damage/outcome calculation
+- [ ] 11-02: Replace Arena.tsx client simulation with API-driven battle flow
+
+### Phase 12: Manhwa Chapter Reward System
+**Goal**: Unlock manhwa chapters as rewards on quest completion and boss kills. Chapter unlock UI, reader integration, and reward trigger events
+**Depends on**: Phase 8
+**Plans**: TBD
+
+Plans:
+- [ ] 12-01: Chapter unlock gating + reward trigger on quest/boss completion
+- [ ] 12-02: Chapter unlock UI + Reader integration (re-enable Reader.tsx)
+
+### Phase 13: Ollama AI Integration
+**Goal**: Wire local Ollama LLM to generate dynamic monster names, boss personalities, quest descriptions, and workout challenge variations — making each run feel unique
+**Depends on**: Phase 12
+**Plans**: TBD
+
+Plans:
+- [ ] 13-01: Ollama API client + streaming integration + prompt templates
+- [ ] 13-02: Wire dynamic generation into QuestBoard, BossEvent, and DungeonGate
+
+### Phase 14: QA & Hardening
+**Goal**: Full E2E test of signup→quest→levelup→rank trial flow, RLS audit, error boundaries across all systems built in phases 1–13
+**Depends on**: Phase 13
+**Plans**: TBD
+
+Plans:
+- [ ] 14-01: Error boundaries + loading state audit across all panels
+- [ ] 14-02: RLS policy verification + full auth flow E2E test
