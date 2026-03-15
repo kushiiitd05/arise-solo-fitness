@@ -52,11 +52,11 @@ Plans:
   1. Quest progress updates go through POST /api/quests/update (server-side)
   2. Stamina and Mana values in Dashboard header reflect real user stats
   3. /api/inventory and /api/shadows routes exist and return data
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: Create /api/inventory and /api/shadows server routes
-- [ ] 03-02: Wire Dashboard header stats to real data
+- [ ] 03-01-PLAN.md — Create GET /api/inventory and GET /api/shadows server routes (service-role, Bearer auth)
+- [ ] 03-02-PLAN.md — Create POST /api/quests/update, replace WorkoutEngine direct write, wire Dashboard STAMINA/MANA
 
 ### Phase 4: Feature Completion
 **Goal**: Wire remaining UI panels (Arena unlock gate, mobile nav, Achievement Hall, Guild Hall)
