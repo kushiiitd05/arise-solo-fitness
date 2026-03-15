@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-01-PLAN.md (Arena rank gate + mobile nav)
-last_updated: "2026-03-15T18:53:46.202Z"
+stopped_at: Completed 04-02-PLAN.md (Achievement overlay + GUILD tab + GuildHall channel fix)
+last_updated: "2026-03-15T19:00:15.395Z"
 progress:
   total_phases: 14
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 4
 
 ## Current Plan
-04-01 complete — next: 04-02
+04-02 complete — phase 04 all plans done
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -31,6 +31,7 @@ in-progress
 - 02-02: Leaderboard.tsx bugs fixed (import, cleanup, CSS tokens) + Dashboard WORLD_RANKINGS panel wired (2026-03-15)
 - 03-01: GET /api/inventory and GET /api/shadows server routes using supabaseServer with joined item/shadow data (2026-03-15)
 - 04-01: Arena rank gate (E→D at level 10), unlock flash + ADD_NOTIFICATION, 4-tab mobile bottom nav (2026-03-16)
+- 04-02: Achievement Hall overlay from STATUS panel, GUILD desktop tab, GuildHall sub.unsubscribe() fix (2026-03-16)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -52,6 +53,8 @@ in-progress
 - [Phase 03-gameplay-loop-hardening]: Use xp_reward field name (DailyQuestItem interface) not xp in quest update route
 - [Phase 03-gameplay-loop-hardening]: wasAllCompleted guard prevents double XP grant on repeated POST /api/quests/update calls
 - [Phase 04-feature-completion]: Arena unlocks at Rank D (level >= 10) via rankAtLevel() — DungeonGate prop mismatch fixed, gold reward is notification text only
+- [Phase 04-feature-completion]: Remove PVP/DUNGEON achievement entries from ACHIEVEMENTS array when narrowing Category type — TypeScript requires data and type to be consistent
+- [Phase 04-feature-completion]: completedAchievementIds computed in Dashboard from game state, not passed from page level — keeps derivation close to its source data
 
 ## Blockers
 - None
@@ -61,5 +64,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 04-01-PLAN.md (Arena rank gate + mobile nav)
+Stopped at: Completed 04-02-PLAN.md (Achievement overlay + GUILD tab + GuildHall channel fix)
 Date: 2026-03-15T14:37:00Z

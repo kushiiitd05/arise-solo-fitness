@@ -11,7 +11,7 @@ fitness experience with AI, combat, ranked progression, and manhwa rewards.
 - [x] **Phase 1: Foundation Fixes** - Fix root-cause bugs that break level-up persistence, API security, and crash-causing DB calls
 - [ ] **Phase 2: Data Completeness** - Seed starter inventory, expand shadow roster, wire leaderboard
 - [x] **Phase 3: Gameplay Loop Hardening** - Server-side writes for all state mutations, stat wiring in UI (completed 2026-03-15)
-- [ ] **Phase 4: Feature Completion** - Arena unlock, mobile nav, Achievements, Guild Hall wiring
+- [x] **Phase 4: Feature Completion** - Arena unlock, mobile nav, Achievements, Guild Hall wiring (completed 2026-03-15)
 - [ ] **Phase 5: Notification System** - Fix broken auto-dismiss notifications, unify notification layer across all game events
 - [ ] **Phase 6: Rank XP Calculation System** - Design multi-event rank XP model (workouts, quests, boss kills all contribute to rank progression)
 - [ ] **Phase 7: Full Rank Trial System** - Formal workout challenge to advance rank (workout → trial → pass → rank up), depends on Phase 6
