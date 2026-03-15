@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 01-03-PLAN.md (UserService security + starter items + intensity rank fix)
-last_updated: "2026-03-15T11:56:50.081Z"
+status: in-progress
+stopped_at: Completed 02-02-PLAN.md (Leaderboard fix + Dashboard integration)
+last_updated: "2026-03-15T14:50:00Z"
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 2
+  total_plans: 5
+  completed_plans: 5
 ---
 
 # GSD State
@@ -18,15 +18,17 @@ progress:
 in-progress
 
 ## Current Phase
-1
+2
 
 ## Current Plan
-01-03 complete — Phase 1 fully complete, next: Phase 2
+02-02 complete — Phase 2 fully complete, next: Phase 3
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
 - 01-02: Quest completion level-up persistence (2026-03-15)
 - 01-03: UserService security (server route writes), starter items on awakening, intensity rank fix (2026-03-15)
+- 02-01: Shadow roster expanded to 17 UUID-keyed entries + STARTER_ITEMS column names fixed (2026-03-15)
+- 02-02: Leaderboard.tsx bugs fixed (import, cleanup, CSS tokens) + Dashboard WORLD_RANKINGS panel wired (2026-03-15)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -39,6 +41,10 @@ in-progress
 - getUserId() helpers must only read Authorization Bearer header, never URL query params
 - createUser must use fetch(/api/user) for writes — never direct anon-key inserts from client services
 - Starter item grant failure is non-fatal — wrapped in try/catch, does not block user creation success
+- Use stable a1b2c3d4-00XX UUID format for SHADOWS_DB — TypeScript and SQL seed must share identical UUID constants
+- STARTER_ITEMS column names must match Supabase migration schema exactly (item_type, effects, emoji — not type, stat_bonus, image_url)
+- Use sub.unsubscribe() not supabase.removeChannel() — the channel object owns cleanup in Supabase v2
+- Replace shadcn CSS tokens with ARISE hex palette — project uses explicit hex values, not CSS variables
 
 ## Blockers
 - None
@@ -48,5 +54,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 01-03-PLAN.md (UserService security + starter items + intensity rank fix)
-Date: 2026-03-15T12:15:00Z
+Stopped at: Completed 02-01-PLAN.md (Shadow roster expansion + inventory seed fix)
+Date: 2026-03-15T14:37:00Z
