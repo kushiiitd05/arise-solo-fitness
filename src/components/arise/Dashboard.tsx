@@ -143,10 +143,14 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
 
           <div className="flex items-center gap-6">
              <div className="hidden xl:flex items-center gap-10 mr-8">
-                {[
-                  { label: "STAMINA", val: "94/100", col: "text-[#22C55E]" },
-                  { label: "MANA", val: "2,480", col: "text-[#7C3AED]" },
-                ].map(s => (
+                {(() => {
+                  const staminaMax = (stats?.vitality ?? 10) * 10;
+                  const manaVal    = (user.level ?? 1) * (stats?.intelligence ?? 10);
+                  return [
+                    { label: "STAMINA", val: `${staminaMax}/${staminaMax}`, col: "text-[#22C55E]" },
+                    { label: "MANA",    val: manaVal.toLocaleString(),       col: "text-[#7C3AED]" },
+                  ];
+                })().map(s => (
                   <div key={s.label}>
                     <div className="system-readout text-[9px] text-[#94A3B8] mb-1 font-black tracking-widest">{s.label}</div>
                     <div className={cn("system-readout text-[13px] font-black", s.col)}>{s.val}</div>
