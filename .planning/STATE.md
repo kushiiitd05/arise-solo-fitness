@@ -10,6 +10,7 @@ in-progress
 01-02 complete — next: 01-03 (if exists) or Phase 2
 
 ## Completed Plans
+- 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
 - 01-02: Quest completion level-up persistence (2026-03-15)
 
 ## Decisions
@@ -19,6 +20,8 @@ in-progress
 - Shadow email pattern (username@shadow-system.com) is intentional — keep it
 - Declare level-up state variables before if(user) block for response scope
 - Reuse rankFromLevelAndXp from xpEngine rather than duplicating formula
+- Use .maybeSingle() not .single() for Supabase queries where row may be absent
+- getUserId() helpers must only read Authorization Bearer header, never URL query params
 
 ## Blockers
 - None
@@ -28,5 +31,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 01-02-PLAN.md (quest completion level-up persistence fix)
-Date: 2026-03-15T11:49:31Z
+Stopped at: Completed 01-01-PLAN.md (API route safety fixes)
+Date: 2026-03-15T12:00:00Z
