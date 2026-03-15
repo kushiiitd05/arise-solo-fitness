@@ -6,9 +6,9 @@ import { GameState, rankAtLevel, xpForLevel } from "@/lib/gameReducer";
 import { 
   RANK_COLORS, RANK_LABELS, JOB_CLASS_ICONS, JOB_CLASS_COLORS 
 } from "@/lib/constants";
-import { 
+import {
   LayoutDashboard, Ghost, Package, DoorOpen, Swords, Zap,
-  Settings2, Plus, Bell, X, Shield, Sparkles, Activity, Swords as SwordsIcon, Trophy
+  Settings2, Plus, Bell, X, Shield, Sparkles, Activity, Swords as SwordsIcon, Trophy, Users
 } from "lucide-react";
 import BossEvent from "./BossEvent";
 import ShadowArmy from "./ShadowArmy";
@@ -20,6 +20,8 @@ import QuestBoard from "./QuestBoard";
 import WorkoutEngine from "./WorkoutEngine";
 import Settings from "./Settings";
 import Leaderboard from "./Leaderboard";
+import GuildHall from "./GuildHall";
+import AchievementHall from "./AchievementHall";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { systemAudio } from "@/lib/audio";
@@ -34,12 +36,13 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ state, dispatch }: DashboardProps) {
-  const [activeTab, setActiveTab] = useState<"STATUS" | "SHADOWS" | "STORAGE" | "GATES" | "ARENA">("STATUS");
+  const [activeTab, setActiveTab] = useState<"STATUS" | "SHADOWS" | "STORAGE" | "GATES" | "ARENA" | "GUILD">("STATUS");
   const [showProfile, setShowProfile] = useState(false);
   const [showQuestBoard, setShowQuestBoard] = useState(false);
   const [showWorkout, setShowWorkout] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
 
   const { user, stats, dailyQuests, chapters, shadows } = state;
   const rank = rankAtLevel(user.level);
@@ -70,12 +73,20 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
   const rankDProgress = Math.min(100, Math.round(((user.level - 1) / (RANK_D_LEVEL - 1)) * 100));
   const levelsToRankD = Math.max(0, RANK_D_LEVEL - user.level);
 
+  const completedAchievementIds: string[] = [
+    ...(((stats?.totalWorkouts ?? 0) > 0) ? ["a1"] : []),          // FIRST BLOOD — first workout
+    ...(((stats?.currentStreak ?? 0) >= 7) ? ["a2"] : []),          // IRON WILL — 7-day streak
+    ...(((shadows?.length ?? 0) > 0) ? ["a10"] : []),               // FIRST SHADOW
+    ...(((shadows?.length ?? 0) >= 10) ? ["a11"] : []),             // SHADOW MONARCH
+  ];
+
   const TABS = [
     { id: "STATUS", label: "STATUS", icon: <LayoutDashboard size={20} /> },
     { id: "SHADOWS", label: "SHADOWS", icon: <Ghost size={20} /> },
     { id: "STORAGE", label: "STORAGE", icon: <Package size={20} /> },
     { id: "GATES", label: "GATES", icon: <DoorOpen size={20} /> },
     { id: "ARENA", label: "ARENA", icon: <Swords size={20} /> },
+    { id: "GUILD", label: "GUILD", icon: <Users size={20} /> },
   ];
 
   const MOBILE_TABS = [
@@ -296,6 +307,31 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                           <div className="system-readout text-[10px] text-[#D97706] font-black tracking-widest animate-pulse uppercase">VIEW →</div>
                         </div>
                       </div>
+                      <div
+                        className="system-panel p-10 bg-gradient-to-br from-[#D97706]/20 to-transparent border-[#D97706]/40 shadow-2xl group cursor-pointer"
+                        onClick={() => setShowAchievements(true)}
+                      >
+                        <h3 className="system-readout text-[11px] text-[#94A3B8] mb-4 font-black tracking-widest uppercase flex items-center gap-2">
+                          <Trophy size={14} className="text-[#D97706]" />
+                          ACHIEVEMENTS
+                        </h3>
+                        {completedAchievementIds.length > 0 ? (
+                          <div className="space-y-2 mb-4">
+                            {completedAchievementIds.slice(0, 3).map(id => {
+                              const names: Record<string, string> = { a1: "FIRST BLOOD", a2: "IRON WILL", a10: "FIRST SHADOW", a11: "SHADOW MONARCH" };
+                              return (
+                                <div key={id} className="flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-[#D97706] shadow-[0_0_6px_rgba(217,119,6,0.6)]" />
+                                  <span className="system-readout text-[10px] text-[#E2E8F0] font-black uppercase tracking-wide">{names[id] ?? id}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="system-readout text-[10px] text-[#94A3B8] italic mb-4">No achievements yet. Start training.</p>
+                        )}
+                        <div className="system-readout text-[10px] text-[#D97706] font-black tracking-widest animate-pulse uppercase">View All →</div>
+                      </div>
                    </div>
                 </div>
               </motion.div>
@@ -365,6 +401,11 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                 )}
               </motion.div>
             )}
+            {activeTab === "GUILD" && (
+              <motion.div key="guild" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-4xl mx-auto">
+                <GuildHall state={state} />
+              </motion.div>
+            )}
           </AnimatePresence>
         </main>
       </div>
@@ -375,6 +416,18 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
         {showWorkout && <WorkoutEngine state={state} dispatch={dispatch} onClose={() => setShowWorkout(false)} />}
         {showSettings && <Settings state={state} dispatch={dispatch} onClose={() => setShowSettings(false)} />}
         {showLeaderboard && <Leaderboard state={state} onClose={() => setShowLeaderboard(false)} />}
+        {showAchievements && (
+          <motion.div
+            key="achievements"
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ type: "tween", duration: 0.25 }}
+            className="fixed inset-0 z-[200] bg-[#030308] overflow-y-auto"
+          >
+            <AchievementHall onClose={() => setShowAchievements(false)} completedIds={completedAchievementIds} />
+          </motion.div>
+        )}
       </AnimatePresence>
       <div className="fixed bottom-6 left-6 opacity-10 text-[8px] tracking-[0.4em] pointer-events-none uppercase font-black z-50">ARISE_SYSTEM_V4.0_STABLE</div>
 
