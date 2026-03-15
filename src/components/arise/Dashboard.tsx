@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GameState, rankAtLevel, xpForLevel } from "@/lib/gameReducer";
 import { 
@@ -14,6 +14,7 @@ import BossEvent from "./BossEvent";
 import ShadowArmy from "./ShadowArmy";
 import Inventory from "./Inventory";
 import DungeonGate from "./DungeonGate";
+import Arena from "./Arena";
 import Profile from "./Profile";
 import QuestBoard from "./QuestBoard";
 import WorkoutEngine from "./WorkoutEngine";
@@ -38,10 +39,35 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
   const [showWorkout, setShowWorkout] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  
+
   const { user, stats, dailyQuests, chapters, shadows } = state;
   const rank = rankAtLevel(user.level);
   const xpMax = xpForLevel(user.level);
+
+  const prevRankRef = useRef<string>(rank);
+  const [arenaJustUnlocked, setArenaJustUnlocked] = useState(false);
+
+  useEffect(() => {
+    if (prevRankRef.current === "E" && rank !== "E") {
+      setArenaJustUnlocked(true);
+      dispatch({
+        type: "ADD_NOTIFICATION",
+        payload: {
+          type: "SYSTEM",
+          title: "COMBAT AUTHORIZATION GRANTED",
+          body: "+500 XP / +200 Gold / Arena Unlocked",
+          icon: "⚔️",
+        },
+      });
+      const t = setTimeout(() => setArenaJustUnlocked(false), 4000);
+      return () => clearTimeout(t);
+    }
+    prevRankRef.current = rank;
+  }, [rank]);
+
+  const RANK_D_LEVEL = 10;
+  const rankDProgress = Math.min(100, Math.round(((user.level - 1) / (RANK_D_LEVEL - 1)) * 100));
+  const levelsToRankD = Math.max(0, RANK_D_LEVEL - user.level);
 
   const TABS = [
     { id: "STATUS", label: "STATUS", icon: <LayoutDashboard size={20} /> },
@@ -281,22 +307,54 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
 
             {activeTab === "GATES" && (
               <motion.div key="gates" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="max-w-7xl mx-auto">
-                <DungeonGate state={state} dispatch={dispatch} />
+                <DungeonGate isOpen={true} onEnter={() => setShowWorkout(true)} />
               </motion.div>
             )}
 
             {activeTab === "ARENA" && (
               <motion.div key="arena" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-4xl mx-auto py-20">
-                <div className="system-panel p-20 text-center border-[#EF4444]/30 bg-[#120505]/40 backdrop-blur-2xl shadow-[0_0_100px_rgba(239,68,68,0.1)] relative overflow-hidden">
-                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#EF4444]/50 to-transparent" />
-                  <SwordsIcon size={80} className="text-[#EF4444] mx-auto mb-10 drop-shadow-[0_0_30px_rgba(239,68,68,0.6)] animate-pulse" />
-                  <h2 className="text-4xl font-orbitron font-black text-[#EF4444] mb-6 tracking-[0.3em] uppercase italic">Arena_Locked</h2>
-                  <p className="system-readout text-[#94A3B8] text-sm max-w-lg mx-auto leading-relaxed mb-10 italic">
-                    Combat authorization denied. PvP access restricted to hunters who have stabilized their core frequencies (Rank C minimum). Current Hunter Rank: {rank}
-                  </p>
-                  <button onClick={() => setActiveTab("STATUS")} className="px-10 py-4 border border-[#EF4444]/40 text-[#EF4444] font-orbitron font-black text-[11px] tracking-widest hover:bg-[#EF4444]/10 transition-all uppercase rounded-xl">Revert_to_Safety</button>
-                  <div className="absolute bottom-4 right-8 opacity-10 text-[8px] font-black text-[#EF4444] uppercase tracking-[0.5em]">Warning: Neural feedback hazard</div>
-                </div>
+                {arenaJustUnlocked && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="mb-8 p-6 border border-[#22C55E]/60 rounded-2xl bg-[#22C55E]/10 text-center shadow-[0_0_40px_rgba(34,197,94,0.2)]"
+                  >
+                    <p className="font-orbitron font-black text-[#22C55E] text-lg tracking-[0.3em] uppercase animate-pulse">
+                      COMBAT AUTHORIZATION GRANTED
+                    </p>
+                  </motion.div>
+                )}
+                {rank === "E" ? (
+                  <div className="system-panel p-20 text-center border-[#EF4444]/30 bg-[#120505]/40 backdrop-blur-2xl shadow-[0_0_100px_rgba(239,68,68,0.1)] relative overflow-hidden">
+                    <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#EF4444]/50 to-transparent" />
+                    <SwordsIcon size={80} className="text-[#EF4444] mx-auto mb-10 drop-shadow-[0_0_30px_rgba(239,68,68,0.6)] animate-pulse" />
+                    <h2 className="text-4xl font-orbitron font-black text-[#EF4444] mb-6 tracking-[0.3em] uppercase italic">Arena_Locked</h2>
+                    <p className="system-readout text-[#94A3B8] text-sm max-w-lg mx-auto leading-relaxed mb-10 italic">
+                      Combat authorization denied. PvP access restricted to Rank D hunters.
+                      Current Rank: {rank}. Levels to Rank D: {levelsToRankD}.
+                    </p>
+                    <div className="max-w-xs mx-auto mb-10">
+                      <div className="flex justify-between text-[10px] font-share-tech-mono text-[#94A3B8] mb-2 uppercase tracking-widest">
+                        <span>Rank E</span>
+                        <span>{rankDProgress}%</span>
+                        <span>Rank D</span>
+                      </div>
+                      <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${rankDProgress}%` }}
+                          transition={{ duration: 1, ease: "easeOut" }}
+                          className="h-full bg-gradient-to-r from-[#EF4444] to-[#7C3AED] shadow-[0_0_10px_rgba(124,58,237,0.6)]"
+                        />
+                      </div>
+                    </div>
+                    <button onClick={() => setActiveTab("STATUS")} className="px-10 py-4 border border-[#EF4444]/40 text-[#EF4444] font-orbitron font-black text-[11px] tracking-widest hover:bg-[#EF4444]/10 transition-all uppercase rounded-xl">Revert_to_Safety</button>
+                    <div className="absolute bottom-4 right-8 opacity-10 text-[8px] font-black text-[#EF4444] uppercase tracking-[0.5em]">Warning: Neural feedback hazard</div>
+                  </div>
+                ) : (
+                  <Arena state={state} dispatch={dispatch} onClose={() => setActiveTab("STATUS")} />
+                )}
               </motion.div>
             )}
           </AnimatePresence>
