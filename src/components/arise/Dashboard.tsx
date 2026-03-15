@@ -22,6 +22,7 @@ import Settings from "./Settings";
 import Leaderboard from "./Leaderboard";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { systemAudio } from "@/lib/audio";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -75,6 +76,13 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
     { id: "STORAGE", label: "STORAGE", icon: <Package size={20} /> },
     { id: "GATES", label: "GATES", icon: <DoorOpen size={20} /> },
     { id: "ARENA", label: "ARENA", icon: <Swords size={20} /> },
+  ];
+
+  const MOBILE_TABS = [
+    { id: "STATUS",  label: "STATUS",  icon: <LayoutDashboard size={22} /> },
+    { id: "GATES",   label: "GATES",   icon: <DoorOpen size={22} /> },
+    { id: "STORAGE", label: "STORAGE", icon: <Package size={22} /> },
+    { id: "ARENA",   label: "ARENA",   icon: <Swords size={22} /> },
   ];
 
   return (
@@ -369,6 +377,31 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
         {showLeaderboard && <Leaderboard state={state} onClose={() => setShowLeaderboard(false)} />}
       </AnimatePresence>
       <div className="fixed bottom-6 left-6 opacity-10 text-[8px] tracking-[0.4em] pointer-events-none uppercase font-black z-50">ARISE_SYSTEM_V4.0_STABLE</div>
+
+      {/* ── MOBILE BOTTOM NAV ── */}
+      <nav
+        className="flex lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#080514]/95 backdrop-blur-3xl border-t border-[#7C3AED]/20"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        {MOBILE_TABS.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              setActiveTab(tab.id as "STATUS" | "SHADOWS" | "STORAGE" | "GATES" | "ARENA");
+              systemAudio?.playClick();
+            }}
+            className={cn(
+              "flex-1 flex flex-col items-center py-3 gap-1 transition-all",
+              activeTab === tab.id
+                ? "text-[#7C3AED] drop-shadow-[0_0_8px_rgba(124,58,237,0.8)]"
+                : "text-[#94A3B8] hover:text-[#E2E8F0]"
+            )}
+          >
+            {tab.icon}
+            <span className="text-[8px] font-orbitron font-black tracking-widest uppercase">{tab.label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
