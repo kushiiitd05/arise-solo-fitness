@@ -1,5 +1,6 @@
 import { COLORS, RANKS, RANK_COLORS } from "./constants";
 import { calculateModifiedStats } from "./game/shadowSystem";
+import { rankFromLevelAndXp } from "@/lib/game/xpEngine";
 
 // ────────────────────────────────────────────
 // TYPES
@@ -248,13 +249,14 @@ export function gameReducer(state: GameState, action: Action): GameState {
       let level = state.user.level;
       let statPointsToAward = 0;
       while (xp >= xpForLevel(level)) { xp -= xpForLevel(level); level++; statPointsToAward += 3; }
-      const rank = rankAtLevel(level);
+      const totalXpAfter = state.user.stats.totalXpEarned + xpAmount;
+      const rank = rankFromLevelAndXp(level, totalXpAfter);
       const rankChanged = rank !== state.user.rank;
       const newStats: UserStats = {
         ...state.user.stats,
         availablePoints: state.user.stats.availablePoints + statPointsToAward,
         totalWorkouts: action.type === "COMPLETE_WORKOUT" ? state.user.stats.totalWorkouts + 1 : state.user.stats.totalWorkouts,
-        totalXpEarned: state.user.stats.totalXpEarned + xpAmount,
+        totalXpEarned: totalXpAfter,
         intensityRanks: (typeof action.payload === 'object' && 'intensityRank' in action.payload && action.payload.intensityRank) ? {
           ...(state.user.stats.intensityRanks || {}),
           [(action.payload as any).exerciseName || "Workout"]: (action.payload as any).intensityRank
