@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 07-02-PLAN.md
-last_updated: "2026-03-16T23:32:29.110Z"
+stopped_at: Completed 07-03-PLAN.md
+last_updated: "2026-03-16T23:45:21.438Z"
 progress:
   total_phases: 14
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 7
 
 ## Current Plan
-07-02 complete
+07-03 complete (Phase 07 complete)
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -39,6 +39,7 @@ in-progress
 - 06-03: Compact rank HUD in Dashboard header + full RANK_PROGRESSION dual-gate block in Profile STATUS panel (2026-03-17)
 - 07-01: trial_last_failed_at DB migration + UserStats type extension + mapDbUserToState mapping + Wave 0 test scaffolds (2026-03-17)
 - 07-02: RankTrialEngine full-screen trial UI + Profile INITIATE TRIAL button (3 states) + Dashboard showTrial wiring (2026-03-17)
+- 07-03: POST /api/rank/advance (dual-gate, idempotent) + RankUpCeremony animated ceremony + hunter_rank bypass removed from xp/award (2026-03-17)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -79,6 +80,9 @@ in-progress
 - [Phase 07-full-rank-trial-system]: Wave 0 route stubs use expect(true).toBe(true) placeholders — contract-first approach; plan 03 replaces them with real assertions
 - [Phase 07-full-rank-trial-system]: RankTrialEngine uses useMemo for trialTargets — level/jobClass rarely change, avoids recompute on every render
 - [Phase 07-full-rank-trial-system]: Dashboard showRankUp + rankUpResult state vars added in Plan 02 so Plan 03 only needs to add RankUpCeremony import and render, no re-wiring
+- [Phase 07-full-rank-trial-system]: XP bonus fetch in /api/rank/advance is non-fatal — rank persists even if /api/xp/award is unreachable
+- [Phase 07-full-rank-trial-system]: hunter_rank exclusively written by /api/rank/advance — xp/award, quests/update must not touch this column
+- [Phase 07-full-rank-trial-system]: RankUpCeremony onDismiss does not dispatch SET_USER — rank already set in RankTrialEngine.handleTrialPass before ceremony
 
 ## Blockers
 - None
@@ -88,5 +92,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 07-02-PLAN.md
+Stopped at: Completed 07-03-PLAN.md
 Date: 2026-03-15T14:37:00Z
