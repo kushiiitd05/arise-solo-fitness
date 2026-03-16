@@ -98,11 +98,12 @@ Plans:
 ### Phase 7: Full Rank Trial System
 **Goal**: Formal progression gate — hunters must complete a rank trial (specific workout challenge) to advance rank. Implements the trial flow: initiate trial → complete workout → pass/fail → rank advance
 **Depends on**: Phase 6
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 07-01: Trial initiation UI + trial workout challenge generation
-- [ ] 07-02: Trial pass/fail evaluation + rank advancement + reward dispatch
+- [ ] 07-01-PLAN.md — DB migration (trial_last_failed_at), UserStats type extension, mapDbUserToState update, Wave 0 test scaffolds
+- [ ] 07-02-PLAN.md — RankTrialEngine component (4-exercise trial loop, pass/fail), Profile INITIATE TRIAL button, Dashboard showTrial wiring
+- [ ] 07-03-PLAN.md — POST /api/rank/advance route (dual-gate validation, idempotency, stat points, XP bonus), RankUpCeremony component, Dashboard ceremony render
 
 ### Phase 8: Dynamic Daily Quest Generation
 **Goal**: Replace fixed quest templates with a level-adaptive generation engine. Quests scale in difficulty and variety based on hunter level and recent completion history
