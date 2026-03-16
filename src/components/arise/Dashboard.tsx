@@ -25,7 +25,7 @@ import Leaderboard from "./Leaderboard";
 import GuildHall from "./GuildHall";
 import AchievementHall from "./AchievementHall";
 import RankTrialEngine from "./RankTrialEngine";
-// import RankUpCeremony from "./RankUpCeremony"; // uncommented in Plan 03
+import RankUpCeremony from "./RankUpCeremony";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { systemAudio } from "@/lib/audio";
@@ -464,7 +464,22 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
             }}
           />
         )}
-        {/* RankUpCeremony render — Plan 03 will add this once component exists */}
+        {showRankUp && rankUpResult && (
+          <RankUpCeremony
+            oldRank={rankUpResult.oldRank}
+            newRank={rankUpResult.newRank}
+            xpBonus={rankUpResult.xpBonus}
+            statPoints={rankUpResult.statPoints}
+            dispatch={dispatch}
+            onDismiss={() => {
+              setShowRankUp(false);
+              setRankUpResult(null);
+              // Rank state was already updated by dispatch({ type: "SET_USER" }) inside
+              // RankTrialEngine.handleTrialPass when /api/rank/advance responded successfully.
+              // No additional SET_USER dispatch needed here.
+            }}
+          />
+        )}
         {showSettings && <Settings state={state} dispatch={dispatch} onClose={() => setShowSettings(false)} />}
         {showLeaderboard && <Leaderboard state={state} onClose={() => setShowLeaderboard(false)} />}
         {showAchievements && (
