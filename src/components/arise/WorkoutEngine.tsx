@@ -144,7 +144,7 @@ export default function WorkoutEngine({ state, dispatch, onClose }: WorkoutEngin
       const result = await awardXp(state.user.id, earned);
 
       // ── QUEST PROGRESS WRITE-BACK ──────────────────────
-      // Map exercise type to quest type and update progress
+      // Map exercise type to quest type, update progress, and fire notifications
       const questsData = await getDailyQuests(state.user.id);
       if (questsData?.quests?.length) {
         const exType = (selectedExercise.type || "").toUpperCase();
@@ -155,11 +155,15 @@ export default function WorkoutEngine({ state, dispatch, onClose }: WorkoutEngin
           RUNNING: ["RUNNING", "CARDIO"],
         };
         const matchKeys = questTypeMap[exType] || [];
+        // Snapshot before loop — used to guard the all-complete notification
+        const wasAllComplete = questsData.quests.every((q: any) => q.completed);
+        let allCompleteNotified = false;
+
         for (const q of questsData.quests) {
-          if (!q.completed && matchKeys.some(k => (q.type || q.name || "").toUpperCase().includes(k))) {
+          if (!q.completed && matchKeys.some((k: string) => (q.type || q.name || "").toUpperCase().includes(k))) {
             const newVal = Math.min(q.target, (q.current || 0) + reps);
             const { data: { session } } = await supabase.auth.getSession();
-            await fetch("/api/quests/update", {
+            const res = await fetch("/api/quests/update", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -167,6 +171,35 @@ export default function WorkoutEngine({ state, dispatch, onClose }: WorkoutEngin
               },
               body: JSON.stringify({ questId: q.id, newCurrent: newVal }),
             });
+            const result = await res.json().catch(() => null);
+            if (result?.success) {
+              // Per-quest completion: was incomplete before call, now complete
+              const updatedQuest = (result.quests as any[])?.find((rq: any) => rq.id === q.id);
+              if (updatedQuest?.completed) {
+                dispatch({
+                  type: "ADD_NOTIFICATION",
+                  payload: {
+                    type: "QUEST",
+                    title: `${q.name} COMPLETE`,
+                    body: `+${q.xp_reward ?? 0} XP Earned`,
+                    icon: "✅",
+                  },
+                });
+              }
+              // All-daily-complete: fires at most once per workout session
+              if (result.allCompleted && !wasAllComplete && !allCompleteNotified) {
+                allCompleteNotified = true;
+                dispatch({
+                  type: "ADD_NOTIFICATION",
+                  payload: {
+                    type: "QUEST",
+                    title: "DAILY QUESTS COMPLETE",
+                    body: "All missions accomplished. Full XP awarded.",
+                    icon: "🏆",
+                  },
+                });
+              }
+            }
           }
         }
       }
