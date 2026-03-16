@@ -79,11 +79,11 @@ Plans:
 ### Phase 5: Notification System
 **Goal**: Fix broken auto-dismiss notification layer — notifications currently stick on screen. Unify all game events (quest completion, stat allocation, reward unlock, rank up, system alerts) through a single dismissable notification system
 **Depends on**: Phase 4
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: Diagnose stuck notification bug, implement auto-dismiss with configurable timeout
-- [ ] 05-02: Wire all game events through unified notification system
+- [ ] 05-01-PLAN.md — Fix DISMISS_NOTIFICATION reducer (filter not map), per-type auto-dismiss timeouts, isUrgent fix, 3-notification render cap, progress bar sync
+- [ ] 05-02-PLAN.md — Wire quest completion notifications in WorkoutEngine, remove duplicate rank-up notification from Dashboard
 
 ### Phase 6: Rank XP Calculation System
 **Goal**: Design and implement a multi-event rank XP model where workouts, quest completions, and boss kills all contribute to rank progression (replacing the current level-only formula)
