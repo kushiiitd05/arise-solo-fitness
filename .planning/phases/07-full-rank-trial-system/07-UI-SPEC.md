@@ -56,13 +56,13 @@ Source: project default; exceptions are standard mobile accessibility (44px touc
 | Role | Size | Weight | Line Height | Font | Usage |
 |------|------|--------|-------------|------|-------|
 | Body | 14px | 400 (regular) | 1.5 | Exo 2 | Exercise descriptions, cooldown messages, reward breakdowns |
-| Label | 12px | 600 (semibold) | 1.4 | Share Tech Mono | Stat labels, rep counters, timer display, cooldown countdown |
+| Label | 12px | 400 (regular) | 1.4 | Share Tech Mono | Stat labels, rep counters, timer display, cooldown countdown |
 | Heading | 20px | 800 (black) | 1.2 | Orbitron | "RANK TRIAL ACTIVE" badge, section headers inside RankTrialEngine |
 | Display | 28px | 800 (black) | 1.1 | Orbitron | "RANK UP: E → D" ceremony header, trial failure headline |
 
 Notes:
 - All headings use `text-transform: uppercase` and `letter-spacing: 0.25em` per globals.css
-- Label tier uses `letter-spacing: 0.1em` per `.system-text` class pattern
+- Label tier uses `letter-spacing: 0.1em` per `.system-text` class pattern. Visual differentiation from Body (Exo 2) is achieved via font family (Share Tech Mono) — no distinct weight needed
 - Do not introduce a 5th size tier in this phase
 
 Source: `src/app/globals.css` @layer base rules + existing component patterns in WorkoutEngine.tsx and Profile.tsx
@@ -124,7 +124,7 @@ Existing components modified in this phase:
 
 **When trial is eligible (both gates met, no cooldown):**
 - "INITIATE TRIAL" button: gold border (`#D97706`), gold text, `hover:` gold background at 20% opacity, 44px min height
-- Button label: `INITIATE RANK TRIAL` (all caps, Orbitron, 12px, weight 700)
+- Button label: `INITIATE RANK TRIAL` (all caps, Orbitron, 12px, weight 800)
 - Subline below button: `"Complete 2× daily rep targets across all 4 exercises to advance."` — 12px, Exo 2, `#94A3B8`
 
 **When cooldown is active (failed within 24h):**
@@ -142,7 +142,7 @@ Existing components modified in this phase:
 - Trial badge: `"RANK TRIAL ACTIVE"` — Orbitron 12px, weight 800, gold (`#F59E0B`), letter-spacing 0.4em, gold border 1px at 40% opacity, horizontal padding 16px
 - Target line: `"TARGET: RANK D"` — Orbitron 20px, weight 800, color = next rank's `RANK_COLORS` value (e.g., `#22c55e` for D)
 - Subline: `"Complete all 4 exercises at 2× your current targets."` — Exo 2 14px, weight 400, `#94A3B8`
-- Abandon button: top-right `X` icon (lucide), `#EF4444`, 24px hitbox minimum 44px touch target
+- Abandon button: top-right `X` icon (lucide), `#EF4444`, 24px hitbox minimum 44px touch target, `aria-label="Abandon Trial"`
 
 **Exercise cards (4 total — push-ups, squats, sit-ups, cardio):**
 - Layout: stacked list, same card pattern as WorkoutEngine exercise list
@@ -181,7 +181,7 @@ Existing components modified in this phase:
 - XP bonus line: `"+{XP} RANK XP"` — Share Tech Mono 14px, `#F59E0B`
 - Stat points line: `"+5 STAT POINTS AVAILABLE"` — Share Tech Mono 14px, `#A855F7`
 
-**Dismiss button:** `"ACKNOWLEDGE"` — Orbitron 12px, weight 700, gold border 1px, gold text, 44px height, calls `onDismiss()`
+**Dismiss button:** `"ACKNOWLEDGE RANK UP"` — Orbitron 12px, weight 800, gold border 1px, gold text, 44px height, calls `onDismiss()`
 
 ---
 
@@ -203,7 +203,7 @@ Existing components modified in this phase:
 | Rank-up ceremony headline | `RANK UP: {OLD} → {NEW}` |
 | Rank-up XP reward | `+{N} RANK XP` |
 | Rank-up stat points | `+5 STAT POINTS AVAILABLE` |
-| Rank-up dismiss | `ACKNOWLEDGE` |
+| Rank-up dismiss | `ACKNOWLEDGE RANK UP` |
 | Notification (failure) | `Trial failed. Cooldown: 24h.` (SYSTEM type, `#EF4444` border) |
 | Notification (rank-up) | `RANK ADVANCED: {OLD} → {NEW}` (SYSTEM type, gold border) |
 | Empty state (no trial available) | N/A — trial entry point always visible in Profile; eligibility displayed inline |
