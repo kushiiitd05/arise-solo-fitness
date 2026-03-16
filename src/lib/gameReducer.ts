@@ -262,8 +262,8 @@ export function gameReducer(state: GameState, action: Action): GameState {
       };
       const notification: Notification | null = level > state.user.level ? {
         id: `levelup-${Date.now()}`, type: "LEVELUP",
-        title: rankChanged ? `RANK UP! ${state.user.rank} -> ${rank}` : `LEVEL UP! -> ${level}`,
-        body: `${statPointsToAward} stat points awarded.${rankChanged ? ` You are now a ${rank}-Rank Hunter.` : ""}`,
+        title: rankChanged ? "RANK ADVANCEMENT" : `LEVEL UP! -> ${level}`,
+        body: rankChanged ? `Hunter rank advanced to Rank ${rank}` : `${statPointsToAward} stat points awarded.`,
         icon: rankChanged ? "⬆️" : "✨", read: false, createdAt: new Date().toISOString(),
       } : null;
       const newHistory = action.type === "COMPLETE_WORKOUT" ? [
@@ -311,7 +311,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       return { ...state, notifications: [{ ...action.payload, id: `notif-${Date.now()}`, createdAt: new Date().toISOString(), read: false }, ...state.notifications.slice(0, 19)] };
 
     case "DISMISS_NOTIFICATION":
-      return { ...state, notifications: state.notifications.map(n => n.id === action.payload ? { ...n, read: true } : n) };
+      return { ...state, notifications: state.notifications.filter(n => n.id !== action.payload) };
 
     default:
       return state;
