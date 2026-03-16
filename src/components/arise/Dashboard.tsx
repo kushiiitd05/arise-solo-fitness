@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GameState, rankAtLevel, xpForLevel } from "@/lib/gameReducer";
+import { nextRankInfo } from "@/lib/game/xpEngine";
+import type { HunterRank } from "@/lib/game/xpEngine";
 import { 
   RANK_COLORS, RANK_LABELS, JOB_CLASS_ICONS, JOB_CLASS_COLORS 
 } from "@/lib/constants";
@@ -164,7 +166,7 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
               </div>
               <div className="flex items-center gap-6">
                  <div className="w-64 md:w-96 h-2 bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
-                    <motion.div 
+                    <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${(user.currentXp / xpMax) * 100}%` }}
                       className="h-full bg-gradient-to-r from-[#06B6D4] via-[#38BDF8] to-[#7C3AED] shadow-[0_0_15px_rgba(6,182,212,0.6)]"
@@ -174,6 +176,38 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                    {Math.floor((user.currentXp / xpMax) * 100)}%_SYNC
                  </span>
               </div>
+              {/* Compact rank progression HUD — shows XP gate toward next rank */}
+              {(() => {
+                const nextInfo = nextRankInfo(user.rank as HunterRank);
+                const totalXp = user.stats?.totalXpEarned ?? 0;
+                if (!nextInfo.nextRank) {
+                  return (
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="system-readout text-[9px] text-[#D97706] font-black tracking-widest uppercase">
+                        MAX RANK
+                      </span>
+                    </div>
+                  );
+                }
+                const xpPct = Math.min(100, (totalXp / nextInfo.xpThreshold) * 100);
+                return (
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="system-readout text-[9px] text-[#94A3B8] font-black tracking-widest uppercase">
+                      RANK {user.rank} → {nextInfo.nextRank}
+                    </span>
+                    <div className="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                      <motion.div
+                        animate={{ width: `${xpPct}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="h-full bg-gradient-to-r from-[#D97706] to-[#F59E0B]"
+                      />
+                    </div>
+                    <span className="system-readout text-[9px] text-[#D97706] font-black tabular-nums">
+                      {totalXp.toLocaleString()}/{nextInfo.xpThreshold.toLocaleString()}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
