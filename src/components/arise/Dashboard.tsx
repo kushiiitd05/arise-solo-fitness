@@ -24,6 +24,8 @@ import Settings from "./Settings";
 import Leaderboard from "./Leaderboard";
 import GuildHall from "./GuildHall";
 import AchievementHall from "./AchievementHall";
+import RankTrialEngine from "./RankTrialEngine";
+// import RankUpCeremony from "./RankUpCeremony"; // uncommented in Plan 03
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { systemAudio } from "@/lib/audio";
@@ -45,6 +47,11 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [showTrial, setShowTrial] = useState(false);
+  const [showRankUp, setShowRankUp] = useState(false);
+  const [rankUpResult, setRankUpResult] = useState<{
+    oldRank: string; newRank: string; xpBonus: number; statPoints: number;
+  } | null>(null);
 
   const { user, stats, dailyQuests, chapters, shadows } = state;
   const rank = rankAtLevel(user.level);
@@ -436,9 +443,28 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
       </div>
 
       <AnimatePresence>
-        {showProfile && <Profile state={state} onClose={() => setShowProfile(false)} />}
+        {showProfile && (
+          <Profile
+            state={state}
+            onClose={() => setShowProfile(false)}
+            onTrialStart={() => { setShowProfile(false); setShowTrial(true); }}
+          />
+        )}
         {showQuestBoard && <QuestBoard state={state} dispatch={dispatch} onClose={() => setShowQuestBoard(false)} />}
         {showWorkout && <WorkoutEngine state={state} dispatch={dispatch} onClose={() => setShowWorkout(false)} />}
+        {showTrial && (
+          <RankTrialEngine
+            state={state}
+            dispatch={dispatch}
+            onClose={() => setShowTrial(false)}
+            onTrialPass={(result) => {
+              setShowTrial(false);
+              setRankUpResult(result);
+              setShowRankUp(true);
+            }}
+          />
+        )}
+        {/* RankUpCeremony render — Plan 03 will add this once component exists */}
         {showSettings && <Settings state={state} dispatch={dispatch} onClose={() => setShowSettings(false)} />}
         {showLeaderboard && <Leaderboard state={state} onClose={() => setShowLeaderboard(false)} />}
         {showAchievements && (

@@ -25,9 +25,10 @@ const STAT_INFO: Record<string, { icon: any; color: string }> = {
 interface ProfileProps {
   state: GameState;
   onClose: () => void;
+  onTrialStart: () => void;
 }
 
-export default function Profile({ state, onClose }: ProfileProps) {
+export default function Profile({ state, onClose, onTrialStart }: ProfileProps) {
   const user = state.user as any;
   const rankColor = RANK_COLORS[(user as any).rank as keyof typeof RANK_COLORS] || COLORS.cyan;
   const jobColor = JOB_CLASS_COLORS[user.jobClass as keyof typeof JOB_CLASS_COLORS] || COLORS.cyan;
@@ -167,6 +168,58 @@ export default function Profile({ state, onClose }: ProfileProps) {
                      <div className="text-[10px] font-system text-[#94A3B8] mt-4 uppercase tracking-widest">
                        Next rank: <span style={{ color: rankColor }}>{nextInfo.nextRank}</span>
                      </div>
+
+                     {/* TRIAL ELIGIBILITY + INITIATE BUTTON */}
+                     {(() => {
+                       const totalXp = user.stats?.totalXpEarned ?? 0;
+                       const gatesMet = nextInfo.nextRank !== null
+                         && user.level >= nextInfo.levelThreshold
+                         && totalXp >= nextInfo.xpThreshold;
+
+                       const cooldownMs = 24 * 60 * 60 * 1000;
+                       const lastFailed = user.stats?.trialLastFailedAt ?? null;
+                       const cooldownActive = lastFailed
+                         ? Date.now() - new Date(lastFailed).getTime() < cooldownMs
+                         : false;
+
+                       if (cooldownActive && lastFailed) {
+                         const msRemaining = new Date(lastFailed).getTime() + cooldownMs - Date.now();
+                         const hh = String(Math.floor(msRemaining / 3600000)).padStart(2, "0");
+                         const mm = String(Math.floor((msRemaining % 3600000) / 60000)).padStart(2, "0");
+                         const ss = String(Math.floor((msRemaining % 60000) / 1000)).padStart(2, "0");
+                         return (
+                           <div className="mt-6 flex items-center gap-3 p-3 border border-[#DC2626]/30 corner-cut">
+                             <span className="font-mono text-[12px] text-[#EF4444] uppercase tracking-widest">
+                               TRIAL LOCKED — {hh}:{mm}:{ss} remaining
+                             </span>
+                           </div>
+                         );
+                       }
+
+                       return (
+                         <div className="mt-6 flex flex-col gap-2">
+                           <button
+                             onClick={() => { if (gatesMet) { onTrialStart(); onClose(); } }}
+                             disabled={!gatesMet}
+                             className="min-h-[44px] w-full border font-orbitron text-[12px] font-black tracking-[0.25em] uppercase transition-all"
+                             style={{
+                               borderColor: gatesMet ? "#D97706" : "rgba(217,119,6,0.3)",
+                               color: gatesMet ? "#D97706" : "rgba(217,119,6,0.4)",
+                               opacity: gatesMet ? 1 : 0.4,
+                               cursor: gatesMet ? "pointer" : "not-allowed",
+                             }}
+                           >
+                             INITIATE RANK TRIAL
+                           </button>
+                           <p className="text-[12px] text-[#94A3B8]">
+                             {gatesMet
+                               ? "Complete 2\u00d7 daily rep targets across all 4 exercises to advance."
+                               : `Reach Level ${nextInfo.levelThreshold} and ${nextInfo.xpThreshold.toLocaleString()} rank XP to unlock trial.`
+                             }
+                           </p>
+                         </div>
+                       );
+                     })()}
                    </>
                  ) : (
                    <div
