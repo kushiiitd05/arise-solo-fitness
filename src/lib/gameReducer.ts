@@ -25,6 +25,7 @@ export interface UserStats {
   pvpWins: number;
   pvpLosses: number;
   intensityRanks?: Record<string, string>;
+  trialLastFailedAt?: string | null;
 }
 
 export interface DailyQuest {
