@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 7 context gathered
-last_updated: "2026-03-16T20:48:05.044Z"
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-16T23:24:43.177Z"
 progress:
   total_phases: 14
   completed_phases: 6
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 17
+  completed_plans: 15
 ---
 
 # GSD State
@@ -18,10 +18,10 @@ progress:
 in-progress
 
 ## Current Phase
-6
+7
 
 ## Current Plan
-06-03 complete
+07-01 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -37,6 +37,7 @@ in-progress
 - 06-01: vitest installed, nextRankInfo added to xpEngine, reducer ADD_XP fixed to dual-gate formula, total_xp_earned unconditional (2026-03-17)
 - 06-02: BOSS_RANK_XP lookup + awardRaidReward via fetch /api/xp/award; BossEvent victory shows dynamic rank-scaled XP (2026-03-17)
 - 06-03: Compact rank HUD in Dashboard header + full RANK_PROGRESSION dual-gate block in Profile STATUS panel (2026-03-17)
+- 07-01: trial_last_failed_at DB migration + UserStats type extension + mapDbUserToState mapping + Wave 0 test scaffolds (2026-03-17)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -73,6 +74,8 @@ in-progress
 - [Phase 06]: vi.mock supabase required in bossService.test.ts to prevent import-time crash without env vars
 - [Phase 06]: IIFE pattern in JSX for rank UI derivation keeps computations inline without polluting component scope
 - [Phase 06]: Gold color (#D97706/#F59E0B) reserved for rank bars to visually differentiate from cyan level XP bar in Dashboard
+- [Phase 07-full-rank-trial-system]: trial_last_failed_at stored as TIMESTAMPTZ nullable — null=no failure, timestamp=cooldown active; UserStats.trialLastFailedAt optional to avoid breaking existing code
+- [Phase 07-full-rank-trial-system]: Wave 0 route stubs use expect(true).toBe(true) placeholders — contract-first approach; plan 03 replaces them with real assertions
 
 ## Blockers
 - None
@@ -82,5 +85,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Phase 7 context gathered
+Stopped at: Completed 07-01-PLAN.md
 Date: 2026-03-15T14:37:00Z
