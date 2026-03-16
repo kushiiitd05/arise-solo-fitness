@@ -88,11 +88,12 @@ Plans:
 ### Phase 6: Rank XP Calculation System
 **Goal**: Design and implement a multi-event rank XP model where workouts, quest completions, and boss kills all contribute to rank progression (replacing the current level-only formula)
 **Depends on**: Phase 5
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 06-01: Design rank XP schema and calculation engine (events → rank XP → rank thresholds)
-- [ ] 06-02: Wire rank XP events from quest completion, boss kills, and workouts
+- [ ] 06-01-PLAN.md — Install vitest, add nextRankInfo helper, fix reducer ADD_XP formula (rankFromLevelAndXp), fix /api/xp/award total_xp_earned unconditional update
+- [ ] 06-02-PLAN.md — Boss kill XP scaled by boss rank (BOSS_RANK_XP lookup), awardRaidReward rerouted through /api/xp/award, BossEvent victory screen shows real XP
+- [ ] 06-03-PLAN.md — Rank progress bars: compact HUD in Dashboard header + full dual-gate block in Profile STATUS panel
 
 ### Phase 7: Full Rank Trial System
 **Goal**: Formal progression gate — hunters must complete a rank trial (specific workout challenge) to advance rank. Implements the trial flow: initiate trial → complete workout → pass/fail → rank advance
