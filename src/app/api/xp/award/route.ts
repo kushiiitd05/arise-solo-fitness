@@ -46,20 +46,20 @@ export async function POST(req: NextRequest) {
     hunter_rank: newRank,
   }).eq("id", userId);
 
-  // Update stats: total XP + stat points
-  if (leveledUp && statPointsAwarded > 0) {
-    const { data: stats } = await supabase
-      .from("user_stats")
-      .select("total_xp_earned, available_stat_points")
-      .eq("user_id", userId)
-      .maybeSingle();
+  // Always update total_xp_earned; only award stat points on level-up
+  const { data: stats } = await supabase
+    .from("user_stats")
+    .select("total_xp_earned, available_stat_points")
+    .eq("user_id", userId)
+    .maybeSingle();
 
-    if (stats) {
-      await supabase.from("user_stats").update({
-        total_xp_earned:      (stats.total_xp_earned || 0) + amount,
-        available_stat_points: (stats.available_stat_points || 0) + statPointsAwarded,
-      }).eq("user_id", userId);
-    }
+  if (stats) {
+    await supabase.from("user_stats").update({
+      total_xp_earned: (stats.total_xp_earned || 0) + amount,
+      ...(leveledUp && statPointsAwarded > 0
+        ? { available_stat_points: (stats.available_stat_points || 0) + statPointsAwarded }
+        : {}),
+    }).eq("user_id", userId);
   }
 
   return NextResponse.json({
