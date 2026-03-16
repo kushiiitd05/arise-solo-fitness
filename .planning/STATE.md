@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-16T19:38:48.603Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-16T19:44:04.072Z"
 progress:
   total_phases: 14
   completed_phases: 5
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 6
 
 ## Current Plan
-06-01 complete
+06-02 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -35,6 +35,7 @@ in-progress
 - 05-01: Notification dismiss fixed — filter in reducer, per-type timeouts, render cap, progress bar sync (2026-03-16)
 - 05-02: Quest completion notifications wired in WorkoutEngine, duplicate rank-up dispatch removed from Dashboard (2026-03-16)
 - 06-01: vitest installed, nextRankInfo added to xpEngine, reducer ADD_XP fixed to dual-gate formula, total_xp_earned unconditional (2026-03-17)
+- 06-02: BOSS_RANK_XP lookup + awardRaidReward via fetch /api/xp/award; BossEvent victory shows dynamic rank-scaled XP (2026-03-17)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -66,6 +67,9 @@ in-progress
 - [Phase 06]: vitest 4.1.0 chosen — compatible with Next.js 16.1.6, no jest-next transform needed
 - [Phase 06]: rankAtLevel kept exported for Dashboard.tsx backward compat — only ADD_XP case migrated to rankFromLevelAndXp
 - [Phase 06]: total_xp_earned made unconditional in /api/xp/award; available_stat_points remains leveledUp-gated
+- [Phase 06]: BOSS_RANK_XP includes MONARCH key (=10000) to prevent silent 400 from /api/xp/award
+- [Phase 06]: awardRaidReward switched from awardXp (anon client) to fetch POST /api/xp/award (server route, correct formula)
+- [Phase 06]: vi.mock supabase required in bossService.test.ts to prevent import-time crash without env vars
 
 ## Blockers
 - None
@@ -75,5 +79,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 06-01-PLAN.md
+Stopped at: Completed 06-02-PLAN.md
 Date: 2026-03-15T14:37:00Z
