@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-16T11:38:15.975Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-16T11:43:21.446Z"
 progress:
   total_phases: 14
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 5
 
 ## Current Plan
-05-01 complete
+05-02 complete (phase 05 complete)
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -33,6 +33,7 @@ in-progress
 - 04-01: Arena rank gate (E→D at level 10), unlock flash + ADD_NOTIFICATION, 4-tab mobile bottom nav (2026-03-16)
 - 04-02: Achievement Hall overlay from STATUS panel, GUILD desktop tab, GuildHall sub.unsubscribe() fix (2026-03-16)
 - 05-01: Notification dismiss fixed — filter in reducer, per-type timeouts, render cap, progress bar sync (2026-03-16)
+- 05-02: Quest completion notifications wired in WorkoutEngine, duplicate rank-up dispatch removed from Dashboard (2026-03-16)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -59,6 +60,8 @@ in-progress
 - [Phase 05-notification-system]: DISMISS_NOTIFICATION must filter (remove) not map — AnimatePresence only fires exit when item is removed from array
 - [Phase 05-notification-system]: isUrgent keyed on title keywords only (URGENT/PENALTY) — type=QUEST should auto-dismiss at 4s
 - [Phase 05-notification-system]: Per-type DISMISS_DURATIONS lookup: QUEST=4s, LEVELUP=7s, others=5s; duration=null means no auto-dismiss
+- [Phase 05-notification-system]: wasAllComplete snapshot before quest loop guards all-complete notification from re-firing on already-complete quests
+- [Phase 05-notification-system]: Dashboard dispatch removed not banner JSX — COMBAT AUTHORIZATION GRANTED still renders as arena flash banner, only ADD_NOTIFICATION dispatch removed to prevent duplicate rank-up notification
 
 ## Blockers
 - None
@@ -68,5 +71,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 05-01-PLAN.md
+Stopped at: Completed 05-02-PLAN.md
 Date: 2026-03-15T14:37:00Z
