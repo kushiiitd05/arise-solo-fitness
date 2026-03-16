@@ -54,15 +54,6 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
   useEffect(() => {
     if (prevRankRef.current === "E" && rank !== "E") {
       setArenaJustUnlocked(true);
-      dispatch({
-        type: "ADD_NOTIFICATION",
-        payload: {
-          type: "SYSTEM",
-          title: "COMBAT AUTHORIZATION GRANTED",
-          body: "+500 XP / +200 Gold / Arena Unlocked",
-          icon: "⚔️",
-        },
-      });
       const t = setTimeout(() => setArenaJustUnlocked(false), 4000);
       return () => clearTimeout(t);
     }
