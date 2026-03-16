@@ -128,12 +128,12 @@ Existing components modified in this phase:
 - Subline below button: `"Complete 2× daily rep targets across all 4 exercises to advance."` — 12px, Exo 2, `#94A3B8`
 
 **When cooldown is active (failed within 24h):**
-- Button replaced by a locked state block: red border (`#DC2626` at 30% opacity), lock icon (lucide `Lock`, 14px, `#EF4444`), text `"TRIAL LOCKED — {HH:MM:SS} remaining"` (Share Tech Mono, 11px, `#EF4444`)
+- Button replaced by a locked state block: red border (`#DC2626` at 30% opacity), lock icon (lucide `Lock`, 14px, `#EF4444`), text `"TRIAL LOCKED — {HH:MM:SS} remaining"` (Share Tech Mono, 12px, `#EF4444`)
 - No hover state on locked block
 
 **When gates not met:**
 - Button rendered but `disabled`, opacity 40%, cursor not-allowed
-- Tooltip or subline: `"Reach Level {X} and {Y} rank XP to unlock trial."` — 11px, `#94A3B8`
+- Tooltip or subline: `"Reach Level {X} and {Y} rank XP to unlock trial."` — 12px, `#94A3B8`
 
 ### Screen 2: RankTrialEngine — Full-screen takeover
 
