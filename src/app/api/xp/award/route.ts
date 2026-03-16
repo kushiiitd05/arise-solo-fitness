@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer as supabase } from "@/lib/supabase-server";
-import { xpForLevel, rankFromLevelAndXp } from "@/lib/game/xpEngine";
+import { xpForLevel } from "@/lib/game/xpEngine";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   const { data: user, error } = await supabase
     .from("users")
-    .select("level, current_xp, hunter_rank")
+    .select("level, current_xp")
     .eq("id", userId)
     .maybeSingle();
 
@@ -36,14 +36,10 @@ export async function POST(req: NextRequest) {
     statPointsAwarded += 3;
   }
 
-  const newRank     = rankFromLevelAndXp(level, (user.current_xp + amount));
-  const rankChanged = newRank !== user.hunter_rank;
-
-  // Update user record
+  // Update user record — rank column is exclusively written by /api/rank/advance
   await supabase.from("users").update({
-    current_xp:  xp,
+    current_xp: xp,
     level,
-    hunter_rank: newRank,
   }).eq("id", userId);
 
   // Always update total_xp_earned; only award stat points on level-up
@@ -68,9 +64,7 @@ export async function POST(req: NextRequest) {
     amountAwarded:    amount,
     newXp:            xp,
     newLevel:         level,
-    newRank,
     leveledUp,
-    rankChanged,
     statPointsAwarded,
     xpToNextLevel:    xpForLevel(level),
   });
