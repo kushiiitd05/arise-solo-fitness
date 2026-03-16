@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-03-16T11:43:21.446Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-16T19:38:48.603Z"
 progress:
   total_phases: 14
   completed_phases: 5
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 12
 ---
 
 # GSD State
@@ -18,10 +18,10 @@ progress:
 in-progress
 
 ## Current Phase
-5
+6
 
 ## Current Plan
-05-02 complete (phase 05 complete)
+06-01 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -34,6 +34,7 @@ in-progress
 - 04-02: Achievement Hall overlay from STATUS panel, GUILD desktop tab, GuildHall sub.unsubscribe() fix (2026-03-16)
 - 05-01: Notification dismiss fixed — filter in reducer, per-type timeouts, render cap, progress bar sync (2026-03-16)
 - 05-02: Quest completion notifications wired in WorkoutEngine, duplicate rank-up dispatch removed from Dashboard (2026-03-16)
+- 06-01: vitest installed, nextRankInfo added to xpEngine, reducer ADD_XP fixed to dual-gate formula, total_xp_earned unconditional (2026-03-17)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -62,6 +63,9 @@ in-progress
 - [Phase 05-notification-system]: Per-type DISMISS_DURATIONS lookup: QUEST=4s, LEVELUP=7s, others=5s; duration=null means no auto-dismiss
 - [Phase 05-notification-system]: wasAllComplete snapshot before quest loop guards all-complete notification from re-firing on already-complete quests
 - [Phase 05-notification-system]: Dashboard dispatch removed not banner JSX — COMBAT AUTHORIZATION GRANTED still renders as arena flash banner, only ADD_NOTIFICATION dispatch removed to prevent duplicate rank-up notification
+- [Phase 06]: vitest 4.1.0 chosen — compatible with Next.js 16.1.6, no jest-next transform needed
+- [Phase 06]: rankAtLevel kept exported for Dashboard.tsx backward compat — only ADD_XP case migrated to rankFromLevelAndXp
+- [Phase 06]: total_xp_earned made unconditional in /api/xp/award; available_stat_points remains leveledUp-gated
 
 ## Blockers
 - None
@@ -71,5 +75,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 05-02-PLAN.md
+Stopped at: Completed 06-01-PLAN.md
 Date: 2026-03-15T14:37:00Z
