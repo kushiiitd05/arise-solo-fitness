@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-03-16T19:44:04.072Z"
+stopped_at: Completed 06-03-PLAN.md
+last_updated: "2026-03-16T19:48:40.818Z"
 progress:
   total_phases: 14
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 6
 
 ## Current Plan
-06-02 complete
+06-03 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -36,6 +36,7 @@ in-progress
 - 05-02: Quest completion notifications wired in WorkoutEngine, duplicate rank-up dispatch removed from Dashboard (2026-03-16)
 - 06-01: vitest installed, nextRankInfo added to xpEngine, reducer ADD_XP fixed to dual-gate formula, total_xp_earned unconditional (2026-03-17)
 - 06-02: BOSS_RANK_XP lookup + awardRaidReward via fetch /api/xp/award; BossEvent victory shows dynamic rank-scaled XP (2026-03-17)
+- 06-03: Compact rank HUD in Dashboard header + full RANK_PROGRESSION dual-gate block in Profile STATUS panel (2026-03-17)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -70,6 +71,8 @@ in-progress
 - [Phase 06]: BOSS_RANK_XP includes MONARCH key (=10000) to prevent silent 400 from /api/xp/award
 - [Phase 06]: awardRaidReward switched from awardXp (anon client) to fetch POST /api/xp/award (server route, correct formula)
 - [Phase 06]: vi.mock supabase required in bossService.test.ts to prevent import-time crash without env vars
+- [Phase 06]: IIFE pattern in JSX for rank UI derivation keeps computations inline without polluting component scope
+- [Phase 06]: Gold color (#D97706/#F59E0B) reserved for rank bars to visually differentiate from cyan level XP bar in Dashboard
 
 ## Blockers
 - None
@@ -79,5 +82,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 06-02-PLAN.md
+Stopped at: Completed 06-03-PLAN.md
 Date: 2026-03-15T14:37:00Z
