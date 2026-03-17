@@ -16,7 +16,7 @@ fitness experience with AI, combat, ranked progression, and manhwa rewards.
 - [x] **Phase 6: Rank XP Calculation System** - Design multi-event rank XP model (workouts, quests, boss kills all contribute to rank progression) (completed 2026-03-16)
 - [x] **Phase 7: Full Rank Trial System** - Formal workout challenge to advance rank (workout → trial → pass → rank up), depends on Phase 6 (completed 2026-03-16)
 - [ ] **Phase 8: Dynamic Daily Quest Generation** - Level-adaptive quest generation engine replacing fixed templates
-- [ ] **Phase 9: Inventory Item Effects** - Permanent and temporary stat bonuses from equipped items (completes Phase 2 seed work)
+- [x] **Phase 9: Inventory Item Effects** - Permanent and temporary stat bonuses from equipped items (completes Phase 2 seed work) (completed 2026-03-17)
 - [ ] **Phase 10: Shadow Army Mechanics** - Formalized shadow extraction/reward flow, shadow stats, army composition rules
 - [ ] **Phase 11: Battle System Backend** - Arena battles via backend API using real player stats, replacing client-side simulation
 - [ ] **Phase 12: Manhwa Chapter Reward System** - Chapter unlock UI on quest/boss completion, reader integration, reward trigger events

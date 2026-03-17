@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 09-01-PLAN.md
-last_updated: "2026-03-17T10:46:37.141Z"
+stopped_at: Completed 09-03-PLAN.md
+last_updated: "2026-03-17T11:08:00Z"
 progress:
   total_phases: 14
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 23
-  completed_plans: 20
+  completed_plans: 23
 ---
 
 # GSD State
@@ -45,6 +45,7 @@ in-progress
 - 08-03: QuestBoard difficulty badge (absolute top-right, hex colors, aria-label) + empty state block (2026-03-17)
 - 09-01: GET /api/inventory server route with items(*) join + inventoryService fetch helper + Inventory.tsx wired (2026-03-17)
 - 09-02: POST /api/inventory/equip — service-role route with ownership check and items(*) join (2026-03-17)
+- 09-03: Inventory equip system wired — server route calls, stat notifications, live footer, init bonus merge, toggleEquipItem removed (2026-03-17)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -96,6 +97,10 @@ in-progress
 - [Phase 09]: getUserId() defined locally per Phase 3 copy-don't-import pattern — no shared helper coupling
 - [Phase 09]: POST /api/inventory/equip uses supabaseServer (service-role) with .eq(user_id) ownership check and items(*) join for immediate effects access
 - [Phase 09-01]: UserItem.items.effects typed as Record<string, number> | null — matches DB column exactly, no aliasing needed
+- [Phase 09-03]: onEquipChange callback pattern — Inventory notifies Dashboard to re-fetch inventory and re-merge bonuses; Inventory doesn't hold state.stats
+- [Phase 09-03]: computeItemBonuses defined locally in page.tsx — copy-don't-import principle; no shared utility coupling
+- [Phase 09-03]: IIFE for footer stat derivation keeps derived data co-located with JSX (same pattern as Dashboard rank HUD)
+- [Phase 09-03]: toggleEquipItem removed — all equip writes go through POST /api/inventory/equip (service-role); zero direct DB writes from client
 
 ## Blockers
 - None
@@ -105,5 +110,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 09-01-PLAN.md
-Date: 2026-03-17T10:22:00Z
+Stopped at: Completed 09-03-PLAN.md
+Date: 2026-03-17T11:08:00Z
