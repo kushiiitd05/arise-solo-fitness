@@ -59,14 +59,8 @@ All sizes in px. Extracted from existing QuestBoard.tsx and globals.css.
 |------|------|--------|-------------|------|---------------|
 | Body | 11px | 400 | 1.6 | Exo 2 | `text-[11px] font-system` |
 | Label | 10px | 700 | 1.4 | Share Tech Mono | `text-[10px] font-system font-black` |
-| Micro | 8–9px | 400 | 1.3 | Share Tech Mono | `text-[8px] font-system tracking-widest` |
+| Micro | 8–9px | 400 / 800 | 1.3 | Share Tech Mono / Orbitron | context-dependent — Share Tech Mono at 400 for system labels; Orbitron at 800 for badge labels (EASY/NORMAL/HARD) with `tracking-[0.15em] uppercase` |
 | Heading | 14–24px | 800 | 1.2 | Orbitron | `font-title font-black tracking-widest` |
-
-New element — difficulty badge:
-
-| Role | Size | Weight | Font | Notes |
-|------|------|--------|------|-------|
-| Badge label | 9px | 800 | Orbitron | `text-[9px] font-title font-black tracking-[0.15em] uppercase` |
 
 Weights in use: 400 (regular) and 800 (black/font-black). No intermediate weights.
 
@@ -108,6 +102,8 @@ Second semantic color: `#DC2626` for error state panel — already exists in Que
 
 These are the net-new visual elements Phase 8 adds to `QuestBoard.tsx`. Existing elements are not re-specified.
 
+Primary focal point: the quest card list is the dominant visual anchor of the daily tab. The difficulty badge is a secondary orientation cue positioned top-right of each card; it must not compete with the quest name or XP reward for visual weight.
+
 ### 1. Difficulty Badge
 
 Position: absolute top-right corner of each quest card, inside the card's `relative` wrapper.
@@ -120,7 +116,7 @@ Position: absolute top-right corner of each quest card, inside the card's `relat
   border: 1px solid {color}/40
   background: {color}/10
   clip-path: same corner-cut as rank-badge in globals.css
-  font: text-[9px] font-title font-black tracking-[0.15em] uppercase
+  font: text-[9px] font-title font-black tracking-[0.15em] uppercase  (Micro role — Orbitron variant)
   text: EASY | NORMAL | HARD
   z-index: 20 (above card glow layer at z-10)
 ```
