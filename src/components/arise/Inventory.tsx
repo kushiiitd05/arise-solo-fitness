@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Package, Shield, Zap, Sparkles, Loader2, Info, CheckCircle2, X, Trash2, ChevronRight } from "lucide-react";
-import { getUserInventory, toggleEquipItem, UserItem } from "@/lib/services/inventoryService";
+import { getUserInventory, UserItem } from "@/lib/services/inventoryService";
 import { systemAudio } from "@/lib/audio";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -13,9 +13,11 @@ function cn(...inputs: ClassValue[]) {
 
 interface InventoryProps {
   userId: string;
+  dispatch: React.Dispatch<any>;
+  onEquipChange?: () => void;
 }
 
-export default function Inventory({ userId }: InventoryProps) {
+export default function Inventory({ userId, dispatch, onEquipChange }: InventoryProps) {
   const [items, setItems] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<UserItem | null>(null);
@@ -42,14 +44,53 @@ export default function Inventory({ userId }: InventoryProps) {
     systemAudio?.playClick();
 
     const newEquipStatus = !item.equipped;
-    const result = await toggleEquipItem(userId, item.id, newEquipStatus);
-    
-    if (result) {
-      if (newEquipStatus) systemAudio?.playSuccess();
+
+    try {
+      const res = await fetch("/api/inventory/equip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${userId}`,
+        },
+        body: JSON.stringify({ userItemId: item.id, equip: newEquipStatus }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "equip failed");
+
+      // Update local item list
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, equipped: newEquipStatus } : i));
       setSelectedItem(prev => prev?.id === item.id ? { ...prev, equipped: newEquipStatus } : prev);
+
+      // Fire stat delta notifications per stat in effects
+      const effects = item.items?.effects;
+      if (effects) {
+        const statKeys = ["strength", "vitality", "agility", "intelligence", "perception", "sense"] as const;
+
+        for (const [key, val] of Object.entries(effects)) {
+          if (statKeys.includes(key as any) && typeof val === "number") {
+            const label = key.toUpperCase();
+            dispatch({
+              type: "ADD_NOTIFICATION",
+              payload: {
+                type: "QUEST",
+                title: newEquipStatus ? `${label} +${val}` : `${label} -${val}`,
+                body: newEquipStatus ? `${item.items?.name} equipped` : `${item.items?.name} unequipped`,
+                icon: newEquipStatus ? "⚔️" : "📦",
+              },
+            });
+          }
+        }
+      }
+
+      // Notify Dashboard to re-merge item bonuses into game state
+      onEquipChange?.();
+
+      if (newEquipStatus) systemAudio?.playSuccess();
+    } catch (err) {
+      console.error("[Inventory] Equip failed:", err);
+    } finally {
+      setToggling(false);
     }
-    setToggling(false);
   };
 
   const getRarityDNA = (rarity: string) => {
