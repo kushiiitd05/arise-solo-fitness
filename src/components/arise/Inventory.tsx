@@ -243,19 +243,30 @@ export default function Inventory({ userId, dispatch, onEquipChange }: Inventory
                 </div>
 
                 <div className="mt-10 flex gap-4">
-                  <button 
+                  {/* Only show equip button for EQUIPMENT type */}
+                  {selectedItem.items?.type === "EQUIPMENT" ? (
+                  <button
                     onClick={() => handleToggleEquip(selectedItem)}
                     disabled={toggling}
                     className={cn(
                       "flex-1 py-5 font-title font-black text-xs tracking-[0.4em] transition-all flex items-center justify-center gap-3 corner-cut shadow-xl",
-                      selectedItem.equipped 
-                        ? "bg-[#EF4444]/10 border border-[#EF4444]/40 text-[#EF4444] hover:bg-[#EF4444]/20" 
+                      selectedItem.equipped
+                        ? "bg-[#EF4444]/10 border border-[#EF4444]/40 text-[#EF4444] hover:bg-[#EF4444]/20"
                         : "bg-[#7C3AED] text-[#E2E8F0] hover:bg-[#A855F7] shadow-[0_0_20px_rgba(124,58,237,0.3)]"
                     )}
                   >
                     {toggling ? <Loader2 size={16} className="animate-spin" /> : selectedItem.equipped ? <X size={16} /> : <CheckCircle2 size={16} />}
                     {selectedItem.equipped ? "UNEQUIP" : "EQUIP"}
                   </button>
+                  ) : (
+                  <button
+                    disabled
+                    className="flex-1 py-5 font-title font-black text-xs tracking-[0.4em] bg-white/5 border border-white/10 text-slate-600 corner-cut flex items-center justify-center gap-3 cursor-not-allowed"
+                  >
+                    <Zap size={16} className="opacity-40" />
+                    USE [FUTURE]
+                  </button>
+                  )}
                   
                   <button className="px-6 py-5 bg-white/5 border border-white/10 text-slate-600 hover:text-[#EF4444] hover:border-[#EF4444]/40 transition-all corner-cut group">
                      <Trash2 size={18} className="group-hover:scale-110 transition-transform" />
