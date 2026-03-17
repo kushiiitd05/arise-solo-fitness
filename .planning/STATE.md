@@ -21,7 +21,7 @@ in-progress
 9
 
 ## Current Plan
-09-02 complete
+09-01 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
