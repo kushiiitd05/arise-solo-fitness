@@ -11,6 +11,7 @@ import SystemNotification from "@/components/system/SystemNotification";
 import { gameReducer, initialState, xpForLevel } from "@/lib/gameReducer";
 import { loadUser, createUser } from "@/lib/services/userService";
 import { getDailyQuests, checkPenaltyZone } from "@/lib/services/questService";
+import { getUserInventory } from "@/lib/services/inventoryService";
 
 /** Map raw Supabase row fields (snake_case) to GameState user shape (camelCase) */
 function mapDbUserToState(dbUser: any, dbStats: any) {
@@ -47,6 +48,19 @@ function mapDbUserToState(dbUser: any, dbStats: any) {
   };
 }
 
+/** Compute total stat bonuses from all equipped items */
+function computeItemBonuses(items: any[]): Partial<Record<string, number>> {
+  const STAT_KEYS = ["strength","vitality","agility","intelligence","perception","sense"];
+  const totals: Record<string, number> = {};
+  for (const item of items) {
+    if (!item.equipped || !item.items?.effects) continue;
+    for (const [key, val] of Object.entries(item.items.effects as Record<string, number>)) {
+      if (STAT_KEYS.includes(key)) totals[key] = (totals[key] ?? 0) + (val as number);
+    }
+  }
+  return totals;
+}
+
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,9 +88,23 @@ export default function Home() {
         try {
           const dbData = await loadUser(session.user.id);
           if (dbData.user) {
+            // Fetch inventory to compute equipped item bonuses at init
+            const inventoryItems = await getUserInventory(session.user.id).catch(() => []);
+            const itemBonuses = computeItemBonuses(inventoryItems);
+            const baseState = mapDbUserToState(dbData.user, dbData.stats);
+            const baseStats = baseState.stats;
+            const mergedStats = baseStats ? {
+              ...baseStats,
+              strength:     (baseStats.strength     ?? 10) + (itemBonuses.strength     ?? 0),
+              vitality:     (baseStats.vitality     ?? 10) + (itemBonuses.vitality     ?? 0),
+              agility:      (baseStats.agility      ?? 10) + (itemBonuses.agility      ?? 0),
+              intelligence: (baseStats.intelligence ?? 10) + (itemBonuses.intelligence ?? 0),
+              perception:   (baseStats.perception   ?? 10) + (itemBonuses.perception   ?? 0),
+              sense:        (baseStats.sense        ?? 10) + (itemBonuses.sense        ?? 0),
+            } : baseStats;
             dispatch({
               type: "SET_USER",
-              payload: mapDbUserToState(dbData.user, dbData.stats),
+              payload: { ...baseState, stats: mergedStats },
             });
             const questsResult = await getDailyQuests(session.user.id);
             if (questsResult?.quests?.length) {
@@ -118,9 +146,23 @@ export default function Home() {
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
         const dbData = await loadUser(session.user.id).catch(() => null);
         if (dbData?.user) {
+          // Merge equipped item bonuses into base stats at sign-in
+          const signInItems = await getUserInventory(session.user.id).catch(() => []);
+          const signInBonuses = computeItemBonuses(signInItems);
+          const signInBase = mapDbUserToState(dbData.user, dbData.stats);
+          const signInBaseStats = signInBase.stats;
+          const signInMergedStats = signInBaseStats ? {
+            ...signInBaseStats,
+            strength:     (signInBaseStats.strength     ?? 10) + (signInBonuses.strength     ?? 0),
+            vitality:     (signInBaseStats.vitality     ?? 10) + (signInBonuses.vitality     ?? 0),
+            agility:      (signInBaseStats.agility      ?? 10) + (signInBonuses.agility      ?? 0),
+            intelligence: (signInBaseStats.intelligence ?? 10) + (signInBonuses.intelligence ?? 0),
+            perception:   (signInBaseStats.perception   ?? 10) + (signInBonuses.perception   ?? 0),
+            sense:        (signInBaseStats.sense        ?? 10) + (signInBonuses.sense        ?? 0),
+          } : signInBaseStats;
           dispatch({
             type: "SET_USER",
-            payload: mapDbUserToState(dbData.user, dbData.stats),
+            payload: { ...signInBase, stats: signInMergedStats },
           });
           const signInQuests = await getDailyQuests(session.user.id);
           if (signInQuests?.quests?.length) {
