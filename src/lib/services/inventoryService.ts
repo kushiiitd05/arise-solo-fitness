@@ -12,7 +12,7 @@ export interface UserItem {
     description: string;
     rarity: string;
     type: string;
-    stats_bonus: any;
+    effects: Record<string, number> | null;
     image_url: string | null;
   }
 }
