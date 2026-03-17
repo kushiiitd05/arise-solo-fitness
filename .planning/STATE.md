@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 9 context gathered
-last_updated: "2026-03-17T10:39:09.215Z"
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-17T10:46:37.141Z"
 progress:
   total_phases: 14
   completed_phases: 7
-  total_plans: 20
-  completed_plans: 18
+  total_plans: 23
+  completed_plans: 20
 ---
 
 # GSD State
@@ -18,10 +18,10 @@ progress:
 in-progress
 
 ## Current Phase
-8
+9
 
 ## Current Plan
-08-03 complete (Phase 08 complete)
+09-02 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -43,6 +43,8 @@ in-progress
 - 08-01: questEngine.ts — 7-type QUEST_POOL, LCG date-seeded PRNG, selectQuestTypes, computeHistoryAdjustment, generateDynamicDailyQuests + DailyQuestItem difficulty field (2026-03-17)
 - 08-02: POST /api/quests/daily — 3-day history + yesterday types queries, generateDynamicDailyQuests replaces generateDailyQuestTargets (2026-03-17)
 - 08-03: QuestBoard difficulty badge (absolute top-right, hex colors, aria-label) + empty state block (2026-03-17)
+- 09-01: GET /api/inventory server route with items(*) join + inventoryService fetch helper + Inventory.tsx wired (2026-03-17)
+- 09-02: POST /api/inventory/equip — service-role route with ownership check and items(*) join (2026-03-17)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -91,6 +93,9 @@ in-progress
 - [Phase 08-dynamic-daily-quest-generation]: history rate 0→1 maps linearly to multiplier 0.8→1.2; EASY below -0.1 adjustment, HARD above +0.1
 - [Phase 08-dynamic-daily-quest-generation]: difficulty field stored in JSONB transparently — no DB schema change needed
 - [Phase 08-dynamic-daily-quest-generation]: Badge renders only when quest.difficulty is defined — backward compatible with existing rows lacking field
+- [Phase 09]: getUserId() defined locally per Phase 3 copy-don't-import pattern — no shared helper coupling
+- [Phase 09]: POST /api/inventory/equip uses supabaseServer (service-role) with .eq(user_id) ownership check and items(*) join for immediate effects access
+- [Phase 09-01]: UserItem.items.effects typed as Record<string, number> | null — matches DB column exactly, no aliasing needed
 
 ## Blockers
 - None
@@ -100,5 +105,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Phase 9 context gathered
+Stopped at: Completed 09-01-PLAN.md
 Date: 2026-03-17T10:22:00Z
