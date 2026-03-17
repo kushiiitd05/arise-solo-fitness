@@ -11,7 +11,7 @@ function getUserId(req: NextRequest): string | null {
 // GET /api/inventory
 // Returns the authenticated user's inventory split into equipped and unequipped items,
 // with each row joined to the items table via the items(*) relation.
-// Used by Inventory.tsx — expects item.items.name, item.items.rarity, item.items.stats_bonus.
+// Used by Inventory.tsx — expects item.items.name, item.items.rarity, item.items.effects.
 export async function GET(req: NextRequest) {
   const userId = getUserId(req);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
