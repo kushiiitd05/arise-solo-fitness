@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-17T09:13:44.293Z"
+stopped_at: Phase 8 complete
+last_updated: "2026-03-17T10:22:00Z"
 progress:
   total_phases: 14
-  completed_phases: 7
-  total_plans: 17
-  completed_plans: 17
+  completed_phases: 8
+  total_plans: 20
+  completed_plans: 20
 ---
 
 # GSD State
@@ -18,10 +18,10 @@ progress:
 in-progress
 
 ## Current Phase
-7
+8
 
 ## Current Plan
-07-03 complete (Phase 07 complete)
+08-03 complete (Phase 08 complete)
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -40,6 +40,9 @@ in-progress
 - 07-01: trial_last_failed_at DB migration + UserStats type extension + mapDbUserToState mapping + Wave 0 test scaffolds (2026-03-17)
 - 07-02: RankTrialEngine full-screen trial UI + Profile INITIATE TRIAL button (3 states) + Dashboard showTrial wiring (2026-03-17)
 - 07-03: POST /api/rank/advance (dual-gate, idempotent) + RankUpCeremony animated ceremony + hunter_rank bypass removed from xp/award (2026-03-17)
+- 08-01: questEngine.ts — 7-type QUEST_POOL, LCG date-seeded PRNG, selectQuestTypes, computeHistoryAdjustment, generateDynamicDailyQuests + DailyQuestItem difficulty field (2026-03-17)
+- 08-02: POST /api/quests/daily — 3-day history + yesterday types queries, generateDynamicDailyQuests replaces generateDailyQuestTargets (2026-03-17)
+- 08-03: QuestBoard difficulty badge (absolute top-right, hex colors, aria-label) + empty state block (2026-03-17)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -83,6 +86,11 @@ in-progress
 - [Phase 07-full-rank-trial-system]: XP bonus fetch in /api/rank/advance is non-fatal — rank persists even if /api/xp/award is unreachable
 - [Phase 07-full-rank-trial-system]: hunter_rank exclusively written by /api/rank/advance — xp/award, quests/update must not touch this column
 - [Phase 07-full-rank-trial-system]: RankUpCeremony onDismiss does not dispatch SET_USER — rank already set in RankTrialEngine.handleTrialPass before ceremony
+- [Phase 08-dynamic-daily-quest-generation]: LCG PRNG (dateToSeed + makeRng) chosen for determinism without external deps
+- [Phase 08-dynamic-daily-quest-generation]: Anti-repeat uses filtered pool first, then fills from excluded if needed (graceful fallback when <4 unique types survive)
+- [Phase 08-dynamic-daily-quest-generation]: history rate 0→1 maps linearly to multiplier 0.8→1.2; EASY below -0.1 adjustment, HARD above +0.1
+- [Phase 08-dynamic-daily-quest-generation]: difficulty field stored in JSONB transparently — no DB schema change needed
+- [Phase 08-dynamic-daily-quest-generation]: Badge renders only when quest.difficulty is defined — backward compatible with existing rows lacking field
 
 ## Blockers
 - None
@@ -92,5 +100,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Phase 8 context gathered
-Date: 2026-03-15T14:37:00Z
+Stopped at: Phase 8 complete
+Date: 2026-03-17T10:22:00Z
