@@ -36,24 +36,6 @@ export async function getUserInventory(userId: string): Promise<UserItem[]> {
   return data || [];
 }
 
-/** Equip or unequip an item */
-export async function toggleEquipItem(userId: string, userItemId: string, equip: boolean) {
-  if (!userId || userId === "local-user") return null;
-  const { data, error } = await supabase
-    .from("user_inventory")
-    .update({ equipped: equip })
-    .eq("id", userItemId)
-    .eq("user_id", userId)
-    .select()
-    .maybeSingle();
-
-  if (error) {
-    console.error("[inventoryService] Error toggling equip:", error);
-    return null;
-  }
-  return data;
-}
-
 /** Get all system items */
 export async function getSystemItems() {
   const { data, error } = await supabase
