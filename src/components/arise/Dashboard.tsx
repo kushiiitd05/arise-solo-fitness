@@ -377,7 +377,43 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
 
             {activeTab === "STORAGE" && (
               <motion.div key="inv" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="max-w-7xl mx-auto">
-                <Inventory userId={user.id} />
+                <Inventory
+                  userId={user.id}
+                  dispatch={dispatch}
+                  onEquipChange={async () => {
+                    const { getUserInventory } = await import("@/lib/services/inventoryService");
+                    const invItems = await getUserInventory(user.id);
+                    // Compute total bonus per stat from equipped items
+                    const STAT_KEYS = ["strength","vitality","agility","intelligence","perception","sense"] as const;
+                    const bonuses: Record<string, number> = {};
+                    for (const invItem of invItems) {
+                      if (!invItem.equipped || !invItem.items?.effects) continue;
+                      for (const [key, val] of Object.entries(invItem.items.effects)) {
+                        if (STAT_KEYS.includes(key as any) && typeof val === "number") {
+                          bonuses[key] = (bonuses[key] ?? 0) + val;
+                        }
+                      }
+                    }
+                    // Re-derive base stats from user.stats (stats without item bonuses)
+                    // We patch state.stats directly — base values stored in state.user.stats
+                    const base = state.user.stats;
+                    if (!base) return;
+                    dispatch({
+                      type: "SET_DATA",
+                      payload: {
+                        stats: {
+                          ...stats,
+                          strength:     (base.strength     ?? 10) + (bonuses.strength     ?? 0),
+                          vitality:     (base.vitality     ?? 10) + (bonuses.vitality     ?? 0),
+                          agility:      (base.agility      ?? 10) + (bonuses.agility      ?? 0),
+                          intelligence: (base.intelligence ?? 10) + (bonuses.intelligence ?? 0),
+                          perception:   (base.perception   ?? 10) + (bonuses.perception   ?? 0),
+                          sense:        (base.sense        ?? 10) + (bonuses.sense        ?? 0),
+                        },
+                      },
+                    });
+                  }}
+                />
               </motion.div>
             )}
 
