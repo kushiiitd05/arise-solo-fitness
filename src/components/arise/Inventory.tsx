@@ -288,11 +288,44 @@ export default function Inventory({ userId, dispatch, onEquipChange }: Inventory
       </div>
 
       {/* FOOTER STATS SUMMARY */}
+      {(() => {
+        // Compute footer values from equipped items
+        const equippedItems = items.filter(i => i.equipped);
+
+        // Active_Buffs: dominant bonus stat (highest single value across all equipped items)
+        const allBonuses: Array<{ stat: string; val: number }> = [];
+        for (const equippedItem of equippedItems) {
+          if (equippedItem.items?.effects) {
+            for (const [stat, val] of Object.entries(equippedItem.items.effects)) {
+              if (["strength","vitality","agility","intelligence","perception","sense"].includes(stat)) {
+                allBonuses.push({ stat, val: val as number });
+              }
+            }
+          }
+        }
+        allBonuses.sort((a, b) => b.val - a.val);
+        const activeBuff = allBonuses.length > 0
+          ? `${allBonuses[0].stat.toUpperCase()} +${allBonuses[0].val}`
+          : "NONE";
+
+        // Defense_Rating: total VIT bonus from equipped items
+        const vitBonus = allBonuses.filter(b => b.stat === "vitality").reduce((s, b) => s + b.val, 0);
+        const defenseRating = vitBonus > 0 ? `VIT +${vitBonus}` : "0 BONUS";
+
+        // Global_Rarity: highest rarity among equipped items
+        const RARITY_ORDER = ["LEGENDARY", "EPIC", "RARE", "UNCOMMON", "COMMON"];
+        const highestRarity = equippedItems.reduce((best, equippedItem) => {
+          const rank = RARITY_ORDER.indexOf(equippedItem.items?.rarity || "COMMON");
+          const bestRank = RARITY_ORDER.indexOf(best);
+          return rank < bestRank ? (equippedItem.items?.rarity || "COMMON") : best;
+        }, "COMMON");
+
+        return (
       <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-white/5">
         {[
-          { label: "Active_Buffs", val: "MAGE_CONCENTRATION", icon: <Zap size={14} />, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-          { label: "Defense_Rating", val: "482_ARMOR_TOTAL", icon: <Shield size={14} />, color: "text-[#7C3AED]", bg: "bg-[#7C3AED]/10" },
-          { label: "Global_Rarity", val: "1_LEGENDARY_ARTIFACT", icon: <Sparkles size={14} />, color: "text-[#F59E0B]", bg: "bg-[#F59E0B]/10" },
+          { label: "Active_Buffs",   val: activeBuff,    icon: <Zap size={14} />,      color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+          { label: "Defense_Rating", val: defenseRating, icon: <Shield size={14} />,   color: "text-[#7C3AED]", bg: "bg-[#7C3AED]/10" },
+          { label: "Global_Rarity",  val: highestRarity, icon: <Sparkles size={14} />, color: "text-[#F59E0B]", bg: "bg-[#F59E0B]/10" },
         ].map(s => (
           <div key={s.label} className="flex items-center gap-4 group p-1 transition-all">
             <div className={cn("p-3 corner-cut border transition-all group-hover:scale-110", s.bg, s.color, s.color.replace('text', 'border') + '/30')}>
@@ -305,6 +338,8 @@ export default function Inventory({ userId, dispatch, onEquipChange }: Inventory
           </div>
         ))}
       </div>
+        );
+      })()}
     </div>
   );
 }
