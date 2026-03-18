@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: "Completed 11-01-PLAN.md"
-last_updated: "2026-03-18T20:45:00Z"
+stopped_at: Completed 11-02-PLAN.md
+last_updated: "2026-03-18T20:45:49.290Z"
 progress:
   total_phases: 14
   completed_phases: 9
-  total_plans: 25
-  completed_plans: 24
+  total_plans: 28
+  completed_plans: 25
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 11
 
 ## Current Plan
-11-01 complete
+11-02 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -49,6 +49,7 @@ in-progress
 - 10-01: DB migration extraction_tokens + 17 shadow seed, buildWeightedPool, POST /api/boss/complete, POST /api/shadows/extract, ShadowArmy wired to server route (2026-03-18)
 - 10-02: Shadow stat multipliers wired into session init (base→+items→×shadows), army power header chip in SHADOWS panel, full stat re-derive in onExtractionChange (2026-03-18)
 - 11-01: battleEngine pure combat module (computeCPI/computeWinProbability/rollOutcome/computePerfMod/XP_BY_RANK/generateOpponentStats) + arena_battles DB migration (2026-03-18)
+- 11-02: POST /api/arena/battle (battle computation, ELO rating, persistence, XP chain) + GET /api/arena/history (last 20 battles) (2026-03-18)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -113,6 +114,9 @@ in-progress
 - [Phase 11-01]: rollOutcome uses single Math.random() call — draw-zone checked first (|statRatio - 0.5| < 0.05 AND roll < 0.25), then WIN/LOSS
 - [Phase 11-01]: arena_battles uses TEXT + CHECK constraint for outcome (not a new DB enum) to avoid altering init_schema
 - [Phase 11-01]: generateOpponentStats offset pool [−1,0,1] all clamped — D player gets biased pool [D,D,C], S gets [A,S,S]
+- [Phase 11]: opponentName from client body flows into arena_battles.opponent_name — client showed this name during matchmaking so history must match
+- [Phase 11]: DRAW rating formula inlined — ELO draw uses actual=0.5, calculateRatingChange only handles win/loss booleans
+- [Phase 11]: History route returns raw snake_case DB column names — camelCase mapping done in Arena.tsx (Plan 11-03)
 
 ## Blockers
 - None
@@ -122,5 +126,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 11-01-PLAN.md
+Stopped at: Completed 11-02-PLAN.md
 Date: 2026-03-18T20:45:00Z
