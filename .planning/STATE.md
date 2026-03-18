@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 10 context gathered
-last_updated: "2026-03-17T12:03:28.288Z"
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-03-18T06:45:59.274Z"
 progress:
   total_phases: 14
   completed_phases: 8
-  total_plans: 23
-  completed_plans: 21
+  total_plans: 25
+  completed_plans: 22
 ---
 
 # GSD State
@@ -18,10 +18,10 @@ progress:
 in-progress
 
 ## Current Phase
-9
+10
 
 ## Current Plan
-09-01 complete
+10-01 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -46,6 +46,7 @@ in-progress
 - 09-01: GET /api/inventory server route with items(*) join + inventoryService fetch helper + Inventory.tsx wired (2026-03-17)
 - 09-02: POST /api/inventory/equip — service-role route with ownership check and items(*) join (2026-03-17)
 - 09-03: Inventory equip system wired — server route calls, stat notifications, live footer, init bonus merge, toggleEquipItem removed (2026-03-17)
+- 10-01: DB migration extraction_tokens + 17 shadow seed, buildWeightedPool, POST /api/boss/complete, POST /api/shadows/extract, ShadowArmy wired to server route (2026-03-18)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -101,6 +102,9 @@ in-progress
 - [Phase 09-03]: computeItemBonuses defined locally in page.tsx — copy-don't-import principle; no shared utility coupling
 - [Phase 09-03]: IIFE for footer stat derivation keeps derived data co-located with JSX (same pattern as Dashboard rank HUD)
 - [Phase 09-03]: toggleEquipItem removed — all equip writes go through POST /api/inventory/equip (service-role); zero direct DB writes from client
+- [Phase 10]: extractionTokens stored as Dashboard local useState — avoids touching GameState for UI-only concern
+- [Phase 10]: buildWeightedPool flat-array-repeat pattern — each shadow repeated N times, random index produces correct weighted distribution
+- [Phase 10]: Token always consumed on extraction attempt regardless of success — locked decision from CONTEXT.md
 
 ## Blockers
 - None
@@ -110,5 +114,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Phase 10 context gathered
+Stopped at: Completed 10-01-PLAN.md
 Date: 2026-03-17T11:08:00Z
