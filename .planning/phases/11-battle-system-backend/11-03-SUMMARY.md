@@ -72,7 +72,7 @@ Each task was committed atomically:
 1. **Task 1: Extend matchStatus state machine + reps input + battle submission** - `77229fe` (feat)
 2. **Task 2: Replace MOCK_HISTORY with live GET /api/arena/history + history tab wiring** - `929799e` (feat)
 
-**Plan metadata:** (pending — added after checkpoint approval)
+**Plan metadata:** `b399043` (docs: complete Arena UI battle wiring plan)
 
 ## Files Created/Modified
 - `src/components/arise/Arena.tsx` — Full battle flow wired: new state vars (repsInput, battleResult, battleHistory), handleBattleSubmit, performing/resolving/result UI blocks, live history useEffect, MOCK_HISTORY removed
@@ -97,8 +97,8 @@ None - no external service configuration required.
 
 ## Next Phase Readiness
 - Full battle system backend complete (Phases 11-01, 11-02, 11-03)
-- Arena UI awaits human verification checkpoint (see Task 3 in plan)
-- After approval, Phase 12 (matchmaking improvements, real opponent discovery) can proceed
+- Human verification checkpoint approved — Phase 11 battle system backend fully complete
+- Phase 12 (Manhwa Chapter Reward System) can proceed — depends on Phase 8 (Dynamic Daily Quest Generation)
 
 ---
 *Phase: 11-battle-system-backend*
