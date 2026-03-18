@@ -42,3 +42,35 @@ export const calculateModifiedStats = (state: GameState) => {
 };
 
 export const attemptExtraction = (rank: string) => Math.random() < 0.1;
+
+// ── WEIGHTED POOL ──────────────────────────────────────────────────────────
+// Exact bucket percentages from CONTEXT.md decisions.
+// Values represent relative weight per shadow rank for each hunter rank tier.
+// E/D bucket:  E-hunter=70%, D-hunter=55%, C-hunter=35%, B-hunter=20%, A-hunter=10%, S-hunter=~20%
+// C/B bucket:  E-hunter=25%, D-hunter=35%, C-hunter=45%, B-hunter=45%, A-hunter=35%, S-hunter=~33%
+// A/S bucket:  E-hunter=5%,  D-hunter=10%, C-hunter=20%, B-hunter=35%, A-hunter=55%, S-hunter=~47%
+// Normalised to integer weights that reproduce those ratios (sum ~100 per hunter rank):
+export const RANK_WEIGHTS: Record<string, Record<string, number>> = {
+  E: { E: 40, D: 30, C: 15, B: 10, A: 3,  S: 2  },  // E/D=70%, C/B=25%, A/S=5%
+  D: { E: 30, D: 25, C: 20, B: 15, A: 7,  S: 3  },  // E/D=55%, C/B=35%, A/S=10%
+  C: { E: 20, D: 15, C: 25, B: 20, A: 13, S: 7  },  // E/D=35%, C/B=45%, A/S=20%
+  B: { E: 10, D: 10, C: 23, B: 22, A: 22, S: 13 },  // E/D=20%, C/B=45%, A/S=35%
+  A: { E: 5,  D: 5,  C: 15, B: 20, A: 33, S: 22 },  // E/D=10%, C/B=35%, A/S=55%
+  S: { E: 10, D: 10, C: 17, B: 16, A: 24, S: 23 },  // ~even distribution
+};
+
+/**
+ * Build a weighted pool of unowned shadows for a given hunter rank.
+ * Each shadow appears N times in the array proportional to its weight.
+ * Random selection: pool[Math.floor(Math.random() * pool.length)]
+ */
+export function buildWeightedPool(hunterRank: string, ownedIds: Set<string>): Shadow[] {
+  const weights = RANK_WEIGHTS[hunterRank] ?? RANK_WEIGHTS["E"];
+  const pool: Shadow[] = [];
+  for (const shadow of SHADOWS_DB) {
+    if (ownedIds.has(shadow.id)) continue;
+    const w = weights[shadow.rank] ?? 1;
+    for (let i = 0; i < w; i++) pool.push(shadow);
+  }
+  return pool;
+}
