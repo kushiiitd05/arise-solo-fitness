@@ -19,13 +19,6 @@ type Exercise = "PUSH-UPS" | "SQUATS" | "SIT-UPS" | "PLANKS";
 const OPPONENT_NAMES = ["IRON SHADOW", "VOID WALKER", "CRIMSON TIDE", "STEEL PHANTOM", "DARK SOVEREIGN", "ABYSS KNIGHT", "VOID HERALD"];
 const OPPONENT_RANKS = ["D", "C", "B", "A"] as const;
 
-const MOCK_HISTORY = [
-  { id: "h1", opponent: "VOID WALKER",    exercise: "PUSH-UPS", outcome: "WIN",  xpChange: +320, date: "2026-03-14" },
-  { id: "h2", opponent: "IRON SHADOW",    exercise: "SQUATS",   outcome: "LOSS", xpChange: -180, date: "2026-03-13" },
-  { id: "h3", opponent: "STEEL PHANTOM",  exercise: "PLANKS",   outcome: "WIN",  xpChange: +290, date: "2026-03-12" },
-  { id: "h4", opponent: "DARK SOVEREIGN", exercise: "SIT-UPS",  outcome: "WIN",  xpChange: +410, date: "2026-03-11" },
-  { id: "h5", opponent: "CRIMSON TIDE",   exercise: "PUSH-UPS", outcome: "DRAW", xpChange: +50,  date: "2026-03-10" },
-];
 
 const MOCK_RANKINGS = [
   { pos: 1,  name: "SHADOW MONARCH",   rank: "S", rating: 2840, wins: 142, losses: 8  },
@@ -96,6 +89,19 @@ export default function Arena({ state, dispatch, onClose }: ArenaProps) {
     }, 2500);
     return () => clearTimeout(t);
   }, [matchStatus]);
+
+  // Fetch battle history when HISTORY tab is activated
+  useEffect(() => {
+    if (activeTab !== "HISTORY") return;
+    const userId = state.user.id;
+    if (!userId) return;
+    fetch("/api/arena/history", {
+      headers: { "Authorization": `Bearer ${userId}` },
+    })
+      .then(r => r.json())
+      .then(d => setBattleHistory(d.battles ?? []))
+      .catch(err => console.error("[Arena] History fetch failed:", err));
+  }, [activeTab, state.user.id]);
 
   const handleAccept = () => {
     setRepsInput("");
@@ -454,7 +460,7 @@ export default function Arena({ state, dispatch, onClose }: ArenaProps) {
         {/* ── HISTORY ── */}
         {activeTab === "HISTORY" && (
           <motion.div key="hist" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            {totalBattles === 0 ? (
+            {battleHistory.length === 0 ? (
               <div className="flex flex-col items-center py-20 gap-4 text-center">
                 <History size={48} className="text-slate-700" />
                 <p className="text-sm font-orbitron font-black text-slate-600 tracking-wider">NO BATTLES ON RECORD</p>
@@ -462,7 +468,7 @@ export default function Arena({ state, dispatch, onClose }: ArenaProps) {
               </div>
             ) : (
               <div className="space-y-2">
-                {MOCK_HISTORY.map((battle, i) => {
+                {battleHistory.map((battle, i) => {
                   const s = OUTCOME_STYLES[battle.outcome as keyof typeof OUTCOME_STYLES];
                   return (
                     <motion.div
@@ -477,12 +483,14 @@ export default function Arena({ state, dispatch, onClose }: ArenaProps) {
                           {s.label}
                         </span>
                         <div>
-                          <p className="text-xs font-orbitron text-white font-black tracking-wider">{battle.opponent}</p>
-                          <p className="text-[9px] font-share-tech-mono text-slate-500 tracking-widest">{battle.exercise} · {battle.date}</p>
+                          <p className="text-xs font-orbitron text-white font-black tracking-wider">{battle.opponent_name}</p>
+                          <p className="text-[9px] font-share-tech-mono text-slate-500 tracking-widest">
+                            {battle.exercise} · {battle.created_at.slice(0, 10)}
+                          </p>
                         </div>
                       </div>
-                      <span className={cn("text-xs font-orbitron font-black", battle.xpChange > 0 ? "text-emerald-400" : "text-red-400")}>
-                        {battle.xpChange > 0 ? "+" : ""}{battle.xpChange} XP
+                      <span className={cn("text-xs font-orbitron font-black", battle.xp_change > 0 ? "text-emerald-400" : "text-slate-500")}>
+                        {battle.xp_change > 0 ? `+${battle.xp_change}` : "0"} XP
                       </span>
                     </motion.div>
                   );
