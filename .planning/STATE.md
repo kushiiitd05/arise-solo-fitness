@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 10-01-PLAN.md
-last_updated: "2026-03-18T06:45:59.274Z"
+stopped_at: Completed 10-02-PLAN.md
+last_updated: "2026-03-18T06:50:00Z"
 progress:
   total_phases: 14
   completed_phases: 8
   total_plans: 25
-  completed_plans: 22
+  completed_plans: 23
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 10
 
 ## Current Plan
-10-01 complete
+10-02 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -47,6 +47,7 @@ in-progress
 - 09-02: POST /api/inventory/equip — service-role route with ownership check and items(*) join (2026-03-17)
 - 09-03: Inventory equip system wired — server route calls, stat notifications, live footer, init bonus merge, toggleEquipItem removed (2026-03-17)
 - 10-01: DB migration extraction_tokens + 17 shadow seed, buildWeightedPool, POST /api/boss/complete, POST /api/shadows/extract, ShadowArmy wired to server route (2026-03-18)
+- 10-02: Shadow stat multipliers wired into session init (base→+items→×shadows), army power header chip in SHADOWS panel, full stat re-derive in onExtractionChange (2026-03-18)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -105,6 +106,9 @@ in-progress
 - [Phase 10]: extractionTokens stored as Dashboard local useState — avoids touching GameState for UI-only concern
 - [Phase 10]: buildWeightedPool flat-array-repeat pattern — each shadow repeated N times, random index produces correct weighted distribution
 - [Phase 10]: Token always consumed on extraction attempt regardless of success — locked decision from CONTEXT.md
+- [Phase 10-02]: onExtractionChange starts from state.user.stats (raw base) to prevent shadow multiplier double-application
+- [Phase 10-02]: armyPower computed via IIFE in JSX — consistent with rank HUD and footer stat derivation patterns
+- [Phase 10-02]: SET_DATA dispatched with both stats and shadows atomically after extraction to prevent partial-state renders
 
 ## Blockers
 - None
@@ -114,5 +118,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 10-01-PLAN.md
-Date: 2026-03-17T11:08:00Z
+Stopped at: Completed 10-02-PLAN.md
+Date: 2026-03-18T06:50:00Z
