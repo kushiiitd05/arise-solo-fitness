@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-03-18T20:45:49.290Z"
+stopped_at: Completed 11-03-PLAN.md
+last_updated: "2026-03-19T00:15:00Z"
 progress:
   total_phases: 14
   completed_phases: 9
   total_plans: 28
-  completed_plans: 25
+  completed_plans: 26
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 11
 
 ## Current Plan
-11-02 complete
+11-03 complete (checkpoint: awaiting human-verify)
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -50,6 +50,7 @@ in-progress
 - 10-02: Shadow stat multipliers wired into session init (base→+items→×shadows), army power header chip in SHADOWS panel, full stat re-derive in onExtractionChange (2026-03-18)
 - 11-01: battleEngine pure combat module (computeCPI/computeWinProbability/rollOutcome/computePerfMod/XP_BY_RANK/generateOpponentStats) + arena_battles DB migration (2026-03-18)
 - 11-02: POST /api/arena/battle (battle computation, ELO rating, persistence, XP chain) + GET /api/arena/history (last 20 battles) (2026-03-18)
+- 11-03: Arena.tsx wired to real battle API — performing/resolving/result states, reps input, outcome card, live history fetch, MOCK_HISTORY removed (2026-03-19)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -117,6 +118,9 @@ in-progress
 - [Phase 11]: opponentName from client body flows into arena_battles.opponent_name — client showed this name during matchmaking so history must match
 - [Phase 11]: DRAW rating formula inlined — ELO draw uses actual=0.5, calculateRatingChange only handles win/loss booleans
 - [Phase 11]: History route returns raw snake_case DB column names — camelCase mapping done in Arena.tsx (Plan 11-03)
+- [Phase 11-03]: pvpWins/pvpLosses not dispatched after battle — API does not return them; only newRating available for immediate SET_DATA update
+- [Phase 11-03]: battleHistory.length === 0 guard for empty state — not totalBattles (server counts may lag until next session)
+- [Phase 11-03]: Error fallback in handleBattleSubmit: setMatchStatus("found") lets player retry if API fails without losing matched opponent
 
 ## Blockers
 - None
@@ -126,5 +130,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 11-02-PLAN.md
-Date: 2026-03-18T20:45:00Z
+Stopped at: Completed 11-03-PLAN.md (checkpoint: awaiting human-verify)
+Date: 2026-03-19T00:15:00Z
