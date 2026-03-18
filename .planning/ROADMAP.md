@@ -126,11 +126,11 @@ Plans:
 ### Phase 10: Shadow Army Mechanics
 **Goal**: Formalize shadow extraction and army management — extraction trigger events, shadow stats, army composition rules, and army power calculations
 **Depends on**: Phase 4
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 10-01: Shadow extraction trigger system + shadow stat schema
-- [ ] 10-02: Army composition rules + army power display in SHADOWS panel
+- [ ] 10-01-PLAN.md — DB migration, buildWeightedPool, POST /api/boss/complete, POST /api/shadows/extract, ShadowArmy.tsx wired to server route with token-gated ARISE button
+- [ ] 10-02-PLAN.md — Shadow bonus merge in page.tsx session init, army power header chip in ShadowArmy.tsx, onExtractionChange stat re-derive in Dashboard.tsx
 
 ### Phase 11: Battle System Backend
 **Goal**: Replace client-side Arena battle simulation with a real backend — battles use actual player stats, matchmaking, and server-authoritative outcomes
