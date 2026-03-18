@@ -400,8 +400,50 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                   extractionTokens={extractionTokens}
                   dispatch={dispatch}
                   onExtractionChange={async () => {
-                    // Re-fetch token count after extraction attempt
+                    // Re-derive stats from raw base to prevent double shadow application
+                    // state.user.stats = raw base stored at login (pre-item, pre-shadow)
+                    // state.stats = current active stats (already has item + shadow multipliers)
+                    // We must start from state.user.stats, not state.stats
                     try {
+                      const { getUserInventory } = await import("@/lib/services/inventoryService");
+                      const { getUserShadows } = await import("@/lib/services/shadowService");
+                      const { calculateModifiedStats } = await import("@/lib/game/shadowSystem");
+                      const STAT_KEYS = ["strength","vitality","agility","intelligence","perception","sense"] as const;
+
+                      const [invItems, shadowRows] = await Promise.all([
+                        getUserInventory(user.id).catch(() => []),
+                        getUserShadows(user.id).catch(() => []),
+                      ]);
+
+                      // Step 1: item bonuses on raw base
+                      const rawBase = state.user.stats;
+                      const bonuses: Record<string, number> = {};
+                      for (const invItem of invItems) {
+                        if (!invItem.equipped || !invItem.items?.effects) continue;
+                        for (const [key, val] of Object.entries(invItem.items.effects)) {
+                          if (STAT_KEYS.includes(key as any) && typeof val === "number") {
+                            bonuses[key] = (bonuses[key] ?? 0) + val;
+                          }
+                        }
+                      }
+                      const itemBoosted = rawBase ? {
+                        ...rawBase,
+                        strength:     (rawBase.strength     ?? 10) + (bonuses.strength     ?? 0),
+                        vitality:     (rawBase.vitality     ?? 10) + (bonuses.vitality     ?? 0),
+                        agility:      (rawBase.agility      ?? 10) + (bonuses.agility      ?? 0),
+                        intelligence: (rawBase.intelligence ?? 10) + (bonuses.intelligence ?? 0),
+                        perception:   (rawBase.perception   ?? 10) + (bonuses.perception   ?? 0),
+                        sense:        (rawBase.sense        ?? 10) + (bonuses.sense        ?? 0),
+                      } : rawBase;
+
+                      // Step 2: shadow multipliers on item-boosted base
+                      const newShadowIds = shadowRows.map(s => s.shadow_id);
+                      const stateForCalc = { ...state, stats: itemBoosted, shadows: newShadowIds };
+                      const finalStats = calculateModifiedStats(stateForCalc);
+
+                      dispatch({ type: "SET_DATA", payload: { stats: finalStats, shadows: newShadowIds } });
+
+                      // Step 3: update token count display
                       const { supabase } = await import("@/lib/supabase");
                       const { data } = await supabase
                         .from("users")
@@ -412,9 +454,8 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                         setExtractionTokens(data.extraction_tokens ?? 0);
                       }
                     } catch (err) {
-                      console.error("[Dashboard] Token re-fetch error:", err);
+                      console.error("[Dashboard] onExtractionChange error:", err);
                     }
-                    // Plan 02 handles full stat re-merge with shadow bonuses
                   }}
                 />
               </motion.div>

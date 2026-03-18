@@ -135,19 +135,38 @@ export default function ShadowArmy({
            </h3>
         </div>
 
-        <button
-          onClick={handleArise}
-          disabled={extracting || loading || extractionTokens === 0}
-          title={extractionTokens === 0 ? "Defeat a boss to earn extraction tokens" : undefined}
-          className="relative px-8 py-4 group disabled:opacity-30 corner-cut focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED]/60"
-        >
-          <div className="absolute inset-0 bg-[#7C3AED] group-hover:bg-[#A855F7] transition-all" />
-          <div className="relative z-10 flex items-center gap-3 text-white font-title font-black text-xs tracking-[0.3em] uppercase">
-            {extracting ? <Loader2 size={16} className="animate-spin" /> : <PlusSquare size={16} />}
-            ARISE
-          </div>
-          <div className="absolute inset-x-0 -bottom-1 h-3 bg-black/40 blur-md opacity-50" />
-        </button>
+        <div className="flex flex-col items-end gap-3">
+          {/* TOKENS | ARMY POWER stat chip */}
+          {(() => {
+            const armyPower = persistentShadows.reduce((sum, ps) => sum + (ps.shadows?.base_power ?? 0), 0);
+            return (
+              <div className="flex items-center gap-4 text-[9px] font-system font-black tracking-[0.3em] uppercase">
+                <span className={extractionTokens > 0 ? "text-[#7C3AED]" : "text-[#7C3AED]/40"}>
+                  TOKENS: {extractionTokens}
+                </span>
+                <span className="text-white/20">|</span>
+                <span className="text-[#E2E8F0]">
+                  ARMY POWER: {armyPower.toLocaleString()}
+                </span>
+              </div>
+            );
+          })()}
+
+          {/* ARISE button — token gate added in Plan 01 */}
+          <button
+            onClick={handleArise}
+            disabled={extracting || loading || extractionTokens === 0}
+            title={extractionTokens === 0 ? "Defeat a boss to earn extraction tokens" : undefined}
+            className="relative px-8 py-4 group disabled:opacity-30 corner-cut focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED]/60"
+          >
+            <div className="absolute inset-0 bg-[#7C3AED] group-hover:bg-[#A855F7] transition-all" />
+            <div className="relative z-10 flex items-center gap-3 text-white font-title font-black text-xs tracking-[0.3em] uppercase">
+              {extracting ? <Loader2 size={16} className="animate-spin" /> : <PlusSquare size={16} />}
+              ARISE
+            </div>
+            <div className="absolute inset-x-0 -bottom-1 h-3 bg-black/40 blur-md opacity-50" />
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 gap-10">
