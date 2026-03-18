@@ -38,14 +38,13 @@ created: 2026-03-17
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 10-01-01 | 01 | 0 | Shadow seed migration | integration | `npx supabase db reset --local` | ❌ W0 | ⬜ pending |
-| 10-01-02 | 01 | 1 | POST /api/boss/complete route | unit | `npx vitest run src/app/api/boss` | ❌ W0 | ⬜ pending |
-| 10-01-03 | 01 | 1 | POST /api/shadows/extract route | unit | `npx vitest run src/app/api/shadows` | ❌ W0 | ⬜ pending |
-| 10-01-04 | 01 | 1 | extractionTokens state in Dashboard | unit | `npx vitest run src/components` | ❌ W0 | ⬜ pending |
-| 10-01-05 | 01 | 2 | Weighted pool extraction logic | unit | `npx vitest run src/lib/services/shadowService` | ❌ W0 | ⬜ pending |
-| 10-02-01 | 02 | 1 | Army composition rules | unit | `npx vitest run src/lib/services/shadowService` | ❌ W0 | ⬜ pending |
-| 10-02-02 | 02 | 1 | Army power calculation | unit | `npx vitest run src/lib/services/shadowService` | ❌ W0 | ⬜ pending |
-| 10-02-03 | 02 | 2 | SHADOWS panel army power display | manual | — | ❌ W0 | ⬜ pending |
+| 10-01-01 | 01 | 1 | Shadow seed migration | static | `grep -c "INSERT INTO" supabase/migrations/20260318000000_extraction_tokens.sql` | ❌ W0 | ⬜ pending |
+| 10-01-02 | 01 | 1 | buildWeightedPool + calculateModifiedStats | unit | `npx vitest run tests/shadowSystem.test.ts --reporter=verbose` | ❌ W0 | ⬜ pending |
+| 10-01-03 | 01 | 1 | POST /api/shadows/extract route | unit | `npx vitest run tests/api/shadows-extract.test.ts --reporter=verbose` | ❌ W0 | ⬜ pending |
+| 10-01-04 | 01 | 1 | extractionTokens gate in ShadowArmy | static | `grep -n "extractionTokens === 0" src/components/arise/ShadowArmy.tsx` | ❌ W0 | ⬜ pending |
+| 10-02-01 | 02 | 2 | Shadow merge in page.tsx syncSession | static | `grep -n "calculateModifiedStats" src/app/page.tsx` | ❌ W0 | ⬜ pending |
+| 10-02-02 | 02 | 2 | Army power header chip + onExtractionChange | static | `grep -n "ARMY POWER" src/components/arise/ShadowArmy.tsx` | ❌ W0 | ⬜ pending |
+| 10-02-03 | 02 | 2 | SHADOWS panel army power display | manual | — | — | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -53,10 +52,8 @@ created: 2026-03-17
 
 ## Wave 0 Requirements
 
-- [ ] `src/app/api/boss/complete/__tests__/route.test.ts` — stubs for boss complete endpoint
-- [ ] `src/app/api/shadows/extract/__tests__/route.test.ts` — stubs for extraction endpoint
-- [ ] `src/lib/services/__tests__/shadowService.test.ts` — weighted pool + army power unit tests
-- [ ] `src/components/__tests__/ShadowArmy.test.tsx` — extraction token state tests
+- [ ] `tests/shadowSystem.test.ts` — buildWeightedPool + calculateModifiedStats unit tests
+- [ ] `tests/api/shadows-extract.test.ts` — extraction endpoint: 401, 400 no tokens, complete army
 
 *Existing vitest infrastructure covers the framework; test files must be created.*
 
