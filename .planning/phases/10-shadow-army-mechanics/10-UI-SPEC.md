@@ -50,7 +50,7 @@ All values are multiples of 4. These are the existing project tokens from `globa
 Exceptions:
 - ARISE button: `px-32px py-16px` (8×4 / 4×4 — fits scale)
 - Shadow detail panel close button: 8px padding (fits scale)
-- Rank badge: `px-8px py-2px` — vertical 2px is a deliberate compact exception, established in `.rank-badge` utility class
+- Rank badge: `px-8px py-4px` — implementation note: the `.rank-badge` utility class in `globals.css` must use `padding-top: 4px; padding-bottom: 4px` (Tailwind `py-1`), not `py-0.5` (2px)
 - Stat chip header row: 16px horizontal gap between TOKENS and ARMY POWER values (fits scale)
 
 Source: `src/app/globals.css` spacing tokens, `src/components/arise/ShadowArmy.tsx` observed padding values
