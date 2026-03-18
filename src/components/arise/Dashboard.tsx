@@ -59,6 +59,7 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
 
   const prevRankRef = useRef<string>(rank);
   const [arenaJustUnlocked, setArenaJustUnlocked] = useState(false);
+  const [extractionTokens, setExtractionTokens] = useState(0);
 
   useEffect(() => {
     if (prevRankRef.current === "E" && rank !== "E") {
@@ -68,6 +69,27 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
     }
     prevRankRef.current = rank;
   }, [rank]);
+
+  // Fetch extraction tokens at mount — stored as local state (not in GameState)
+  useEffect(() => {
+    if (!user.id || user.id === "local-user") return;
+    const fetchTokens = async () => {
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        const { data } = await supabase
+          .from("users")
+          .select("extraction_tokens")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (data?.extraction_tokens !== undefined) {
+          setExtractionTokens(data.extraction_tokens ?? 0);
+        }
+      } catch (err) {
+        console.error("[Dashboard] Token fetch error:", err);
+      }
+    };
+    fetchTokens();
+  }, [user.id]);
 
   const RANK_D_LEVEL = 10;
   const rankDProgress = Math.min(100, Math.round(((user.level - 1) / (RANK_D_LEVEL - 1)) * 100));
@@ -371,7 +393,30 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
 
             {activeTab === "SHADOWS" && (
               <motion.div key="shadows" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="max-w-7xl mx-auto">
-                <ShadowArmy userId={user.id} shadows={shadows} stats={stats} />
+                <ShadowArmy
+                  userId={user.id}
+                  shadows={shadows}
+                  stats={stats}
+                  extractionTokens={extractionTokens}
+                  dispatch={dispatch}
+                  onExtractionChange={async () => {
+                    // Re-fetch token count after extraction attempt
+                    try {
+                      const { supabase } = await import("@/lib/supabase");
+                      const { data } = await supabase
+                        .from("users")
+                        .select("extraction_tokens")
+                        .eq("id", user.id)
+                        .maybeSingle();
+                      if (data?.extraction_tokens !== undefined) {
+                        setExtractionTokens(data.extraction_tokens ?? 0);
+                      }
+                    } catch (err) {
+                      console.error("[Dashboard] Token re-fetch error:", err);
+                    }
+                    // Plan 02 handles full stat re-merge with shadow bonuses
+                  }}
+                />
               </motion.div>
             )}
 
