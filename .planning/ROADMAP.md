@@ -18,7 +18,7 @@ fitness experience with AI, combat, ranked progression, and manhwa rewards.
 - [ ] **Phase 8: Dynamic Daily Quest Generation** - Level-adaptive quest generation engine replacing fixed templates
 - [x] **Phase 9: Inventory Item Effects** - Permanent and temporary stat bonuses from equipped items (completes Phase 2 seed work) (completed 2026-03-17)
 - [x] **Phase 10: Shadow Army Mechanics** - Formalized shadow extraction/reward flow, shadow stats, army composition rules (completed 2026-03-18)
-- [ ] **Phase 11: Battle System Backend** - Arena battles via backend API using real player stats, replacing client-side simulation
+- [x] **Phase 11: Battle System Backend** - Arena battles via backend API using real player stats, replacing client-side simulation (completed 2026-03-18)
 - [ ] **Phase 12: Manhwa Chapter Reward System** - Chapter unlock UI on quest/boss completion, reader integration, reward trigger events
 - [ ] **Phase 13: Ollama AI Integration** - Dynamic monster names, boss personalities, quest descriptions, workout challenge variations via local LLM
 - [ ] **Phase 14: QA & Hardening** - E2E test, RLS audit, error boundaries across full system
