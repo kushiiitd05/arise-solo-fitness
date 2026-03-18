@@ -138,9 +138,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — battleEngine.ts pure combat module (CPI, winProbability, outcome roll, perfMod, XP lookup) + TDD + arena_battles migration
-- [ ] 11-02-PLAN.md — POST /api/arena/battle (outcome computation, persistence, XP chain) + GET /api/arena/history
-- [ ] 11-03-PLAN.md — Arena.tsx wired to real battle API — reps input, result card, MOCK_HISTORY removal, live history fetch
+- [x] 11-01-PLAN.md — battleEngine.ts pure combat module (CPI, winProbability, outcome roll, perfMod, XP lookup) + TDD + arena_battles migration
+- [x] 11-02-PLAN.md — POST /api/arena/battle (outcome computation, persistence, XP chain) + GET /api/arena/history
+- [x] 11-03-PLAN.md — Arena.tsx wired to real battle API — reps input, result card, MOCK_HISTORY removal, live history fetch
 
 ### Phase 12: Manhwa Chapter Reward System
 **Goal**: Unlock manhwa chapters as rewards on quest completion and boss kills. Chapter unlock UI, reader integration, and reward trigger events
