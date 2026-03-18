@@ -106,6 +106,30 @@ export default function Home() {
               type: "SET_USER",
               payload: { ...baseState, stats: mergedStats },
             });
+            // SHADOW BONUS MERGE — stack order: base → +items → ×shadows
+            // Must happen after item merge so multipliers apply to item-boosted values
+            const { getUserShadows } = await import("@/lib/services/shadowService");
+            const { calculateModifiedStats } = await import("@/lib/game/shadowSystem");
+            const shadowRows = await getUserShadows(session.user.id).catch(() => []);
+            const shadowIds = shadowRows.map((s: { shadow_id: string }) => s.shadow_id);
+            if (shadowIds.length > 0) {
+              // Build partial GameState: item-boosted stats + shadow IDs
+              const stateForShadows = {
+                ...initialState,
+                stats: mergedStats ?? baseStats ?? initialState.stats,
+                shadows: shadowIds,
+              };
+              const finalStats = calculateModifiedStats(stateForShadows as any);
+              dispatch({
+                type: "SET_USER",
+                payload: { ...baseState, stats: finalStats },
+              });
+              // Also update top-level state.shadows so ShadowArmy renders correctly
+              dispatch({ type: "SET_DATA", payload: { shadows: shadowIds } });
+            } else {
+              // No shadows — ensure state.shadows is cleared
+              dispatch({ type: "SET_DATA", payload: { shadows: [] } });
+            }
             const questsResult = await getDailyQuests(session.user.id);
             if (questsResult?.quests?.length) {
               dispatch({ type: "SET_DAILY_QUESTS", payload: questsResult.quests });
@@ -164,6 +188,21 @@ export default function Home() {
             type: "SET_USER",
             payload: { ...signInBase, stats: signInMergedStats },
           });
+          // Shadow bonus merge at sign-in
+          const { getUserShadows: getShadows } = await import("@/lib/services/shadowService");
+          const { calculateModifiedStats: calcMod } = await import("@/lib/game/shadowSystem");
+          const signInShadowRows = await getShadows(session.user.id).catch(() => []);
+          const signInShadowIds = signInShadowRows.map((s: { shadow_id: string }) => s.shadow_id);
+          if (signInShadowIds.length > 0) {
+            const signInStateForShadows = {
+              ...initialState,
+              stats: signInMergedStats ?? signInBaseStats ?? initialState.stats,
+              shadows: signInShadowIds,
+            };
+            const signInFinalStats = calcMod(signInStateForShadows as any);
+            dispatch({ type: "SET_USER", payload: { ...signInBase, stats: signInFinalStats } });
+            dispatch({ type: "SET_DATA", payload: { shadows: signInShadowIds } });
+          }
           const signInQuests = await getDailyQuests(session.user.id);
           if (signInQuests?.quests?.length) {
             dispatch({ type: "SET_DAILY_QUESTS", payload: signInQuests.quests });
