@@ -135,11 +135,12 @@ Plans:
 ### Phase 11: Battle System Backend
 **Goal**: Replace client-side Arena battle simulation with a real backend — battles use actual player stats, matchmaking, and server-authoritative outcomes
 **Depends on**: Phase 10
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 11-01: Battle API route + stat-based damage/outcome calculation
-- [ ] 11-02: Replace Arena.tsx client simulation with API-driven battle flow
+- [ ] 11-01-PLAN.md — battleEngine.ts pure combat module (CPI, winProbability, outcome roll, perfMod, XP lookup) + TDD + arena_battles migration
+- [ ] 11-02-PLAN.md — POST /api/arena/battle (outcome computation, persistence, XP chain) + GET /api/arena/history
+- [ ] 11-03-PLAN.md — Arena.tsx wired to real battle API — reps input, result card, MOCK_HISTORY removal, live history fetch
 
 ### Phase 12: Manhwa Chapter Reward System
 **Goal**: Unlock manhwa chapters as rewards on quest completion and boss kills. Chapter unlock UI, reader integration, and reward trigger events
