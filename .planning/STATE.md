@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-03-19T11:07:30Z"
+stopped_at: "Checkpoint: Task 2 visual verification in 15-03-PLAN.md"
+last_updated: "2026-03-19T11:10:22.606Z"
 progress:
   total_phases: 15
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 36
-  completed_plans: 33
+  completed_plans: 34
 ---
 
 # GSD State
@@ -143,6 +143,9 @@ in-progress
 - [Phase 15-02]: ExerciseGuideModal wraps its own motion.div overlay (not SystemWindow) — SystemWindow y:20 translate conflicts with fixed-position overlay animation
 - [Phase 15-02]: alreadyUnlocked guard in handleVisualUnlock prevents double mana deduction when user reopens a previously unlocked guide
 - [Phase 15-02]: Hover glow uses Tailwind arbitrary shadow value for CSS-native hover; static base glow uses inline style prop on enabled-idle state
+- [Phase 15]: e.stopPropagation() applied on guide button — prevents card selection while opening guide
+- [Phase 15]: userId extracted directly from state.user.id (string field in GameState) — no any cast needed
+- [Phase 15]: onManaSpent dispatches USE_MANA: 1 via arrow function — WorkoutEngine owns dispatch, modal owns no reducer knowledge
 
 ## Blockers
 - None
@@ -157,5 +160,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 - Phase 15 added: Exercise Guidance System — AI-powered step-by-step exercise instructions via Ollama with text-only and visual (image generation) modes. Guides cached per exercise and reused across users.
 
 ## Last Session
-Stopped at: Completed 15-02-PLAN.md
+Stopped at: Checkpoint: Task 2 visual verification in 15-03-PLAN.md
 Date: 2026-03-19T11:07:30Z
