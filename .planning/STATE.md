@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 12-01-PLAN.md
-last_updated: "2026-03-19T05:32:57.074Z"
+stopped_at: Completed 12-02-PLAN.md
+last_updated: "2026-03-19T05:42:30Z"
 progress:
   total_phases: 14
   completed_phases: 10
   total_plans: 31
-  completed_plans: 27
+  completed_plans: 28
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 12
 
 ## Current Plan
-12-01 complete
+12-02 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -52,6 +52,7 @@ in-progress
 - 11-02: POST /api/arena/battle (battle computation, ELO rating, persistence, XP chain) + GET /api/arena/history (last 20 battles) (2026-03-18)
 - 11-03: Arena.tsx wired to real battle API — performing/resolving/result states, reps input, outcome card, live history fetch, MOCK_HISTORY removed (2026-03-19)
 - 12-01: chapters_unlocked DB migration + 11 pure-logic vitest scaffolds (CH-01/CH-02/CH-03) + CHAPTER notify duration 6500ms (2026-03-19)
+- 12-02: chapters_unlocked read-then-write wired into boss/complete and quests/update routes + WorkoutEngine rank-based unlock removed (2026-03-19)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -123,6 +124,8 @@ in-progress
 - [Phase 11-03]: battleHistory.length === 0 guard for empty state — not totalBattles (server counts may lag until next session)
 - [Phase 11-03]: Error fallback in handleBattleSubmit: setMatchStatus("found") lets player retry if API fails without losing matched opponent
 - [Phase 12-manhwa-chapter-reward-system]: chapters_unlocked uses INTEGER count with DEFAULT 1 — index-based mapping ensures existing users get Chapter 1 without backfill, Wave 0 tests use pure inline logic not route imports
+- [Phase 12-02]: chapters_unlocked increment in quests/update placed after hunter_rank update inside if(user) block — reuses already-fetched user row with expanded SELECT
+- [Phase 12-02]: Server-only chapter unlock enforced — no client-side unlockNextChapter/getChapterUrl calls remain; chapter_newly_unlocked boolean returned for client to consume
 
 ## Blockers
 - None
@@ -132,5 +135,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 12-01-PLAN.md
-Date: 2026-03-19T01:00:00Z
+Stopped at: Completed 12-02-PLAN.md
+Date: 2026-03-19T05:42:30Z
