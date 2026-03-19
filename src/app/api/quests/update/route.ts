@@ -62,6 +62,10 @@ export async function POST(req: NextRequest) {
   let newRank: string = "E";
   let statPointsAwarded = 0;
 
+  // Chapter unlock state (declared outside guard for response scope)
+  let chaptersUnlockedCount = 1;
+  let chapterNewlyUnlocked = false;
+
   // Only grant XP when this update causes the transition false → true
   if (allCompleted && !wasAllCompleted) {
     const xpEarned = (updatedQuests as any[]).reduce(
@@ -71,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     const { data: user } = await supabase
       .from("users")
-      .select("current_xp, level")
+      .select("current_xp, level, chapters_unlocked")
       .eq("id", userId)
       .maybeSingle();
 
@@ -125,6 +129,18 @@ export async function POST(req: NextRequest) {
           .update({ total_xp_earned: (stats.total_xp_earned || 0) + xpEarned })
           .eq("user_id", userId);
       }
+
+      // Chapter unlock increment (inline, capped at 4)
+      const currentChapters = (user as any).chapters_unlocked ?? 1;
+      const newChapters = Math.min(currentChapters + 1, 4);
+      const chapterUnlocked = newChapters > currentChapters;
+      await supabase
+        .from("users")
+        .update({ chapters_unlocked: newChapters })
+        .eq("id", userId);
+
+      chaptersUnlockedCount = newChapters;
+      chapterNewlyUnlocked = chapterUnlocked;
     }
   }
 
@@ -138,5 +154,7 @@ export async function POST(req: NextRequest) {
     newLevel,
     newRank,
     statPointsAwarded,
+    chapters_unlocked: chaptersUnlockedCount,
+    chapter_newly_unlocked: chapterNewlyUnlocked,
   });
 }
