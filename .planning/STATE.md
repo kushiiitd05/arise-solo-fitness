@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 14-02-PLAN.md — arena_battles RLS, xp/award + quests/daily Bearer auth fixes, gameFlow integration tests
-last_updated: "2026-03-19T16:32:42.826Z"
+stopped_at: Completed 14-01-PLAN.md — ErrorBoundary created, 14 Dashboard panels wrapped, 3 unit tests green
+last_updated: "2026-03-19T16:35:06.970Z"
 progress:
   total_phases: 15
-  completed_phases: 14
+  completed_phases: 15
   total_plans: 39
-  completed_plans: 39
+  completed_plans: 40
 ---
 
 # GSD State
@@ -149,6 +149,8 @@ in-progress
 - [Phase 15]: onManaSpent dispatches USE_MANA: 1 via arrow function — WorkoutEngine owns dispatch, modal owns no reducer knowledge
 - [Phase 08-dynamic-daily-quest-generation]: generateDailyQuestsForUser fetches level/job_class inline, passes empty arrays for historyRows/previousTypes for new users — closes last static quest bypass path
 - [Phase 14]: getUserId() defined locally in each route (copy-per-file, Phase 3 pattern); arena_battles SELECT-only RLS (service-role bypasses for writes by design)
+- [Phase 14-qa-hardening]: @vitest-environment jsdom docblock per-file for React component tests — environmentMatchGlobs not in vitest 4.1.0
+- [Phase 14-qa-hardening]: ErrorBoundary wraps individual component elements, not layout containers — boundary is minimal per-panel isolation
 
 ## Blockers
 - None
@@ -163,5 +165,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 - Phase 15 added: Exercise Guidance System — AI-powered step-by-step exercise instructions via Ollama with text-only and visual (image generation) modes. Guides cached per exercise and reused across users.
 
 ## Last Session
-Stopped at: Completed 14-02-PLAN.md — arena_battles RLS, xp/award + quests/daily Bearer auth fixes, gameFlow integration tests
+Stopped at: Completed 14-01-PLAN.md — ErrorBoundary created, 14 Dashboard panels wrapped, 3 unit tests green
 Date: 2026-03-19T11:45:27Z
