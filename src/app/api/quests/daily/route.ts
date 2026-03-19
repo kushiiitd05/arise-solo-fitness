@@ -6,9 +6,15 @@ function today() {
   return new Date().toISOString().split("T")[0];
 }
 
+function getUserId(req: NextRequest): string | null {
+  const auth = req.headers.get("authorization");
+  if (auth?.startsWith("Bearer ")) return auth.slice(7);
+  return null;
+}
+
 export async function GET(req: NextRequest) {
-  const userId = req.nextUrl.searchParams.get("userId");
-  if (!userId) return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+  const userId = getUserId(req);
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const date = today();
 
@@ -27,9 +33,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const userId = getUserId(req);
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const body = await req.json().catch(() => null);
-  const userId = body?.userId;
-  if (!userId) return NextResponse.json({ error: "Missing userId" }, { status: 400 });
 
   const date = today();
 
