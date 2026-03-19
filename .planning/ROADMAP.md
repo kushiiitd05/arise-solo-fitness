@@ -111,8 +111,9 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 08-01: Quest generation algorithm (difficulty scaling, variety rules)
-- [ ] 08-02: Replace fixed templates with generated quests, wire to QuestBoard UI
+- [x] 08-01: questEngine.ts — 7-type pool, date-seeded LCG rotation, history adaptation, generateDynamicDailyQuests
+- [ ] 08-02: POST /api/quests/daily — wire generateDynamicDailyQuests, 3-day history query, yesterday types anti-repeat
+- [ ] 08-03: QuestBoard difficulty badge + empty state block
 
 ### Phase 9: Inventory Item Effects
 **Goal**: Equippable items grant real permanent or temporary stat bonuses (STR, AGI, VIT, INT, PER). Completes the inventory system seeded in Phase 2 — items are currently cosmetic only
