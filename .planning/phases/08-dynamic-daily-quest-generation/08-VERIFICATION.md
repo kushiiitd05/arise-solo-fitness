@@ -1,38 +1,33 @@
 ---
 phase: 08-dynamic-daily-quest-generation
-verified: 2026-03-19T00:00:00Z
-status: gaps_found
-score: 4/5 must-haves verified
-gaps:
-  - truth: "All paths to quest generation use the dynamic engine (no fixed template bypasses)"
-    status: partial
-    reason: "questService.ts::generateDailyQuestsForUser() still uses 4 hardcoded static quests (Push-Ups 60, Squats 60, Sit-Ups 60, Running 4km) and is called by userService.ts for new user signup. New users receive fixed quests on their first day instead of level-adaptive dynamic quests."
-    artifacts:
-      - path: "src/lib/services/questService.ts"
-        issue: "generateDailyQuestsForUser (lines 72-100) builds a static DailyQuestItem[] with fixed targets and 4 fixed types (PUSHUP, SQUAT, SITUP, RUNNING). No call to generateDynamicDailyQuests."
-      - path: "src/lib/services/userService.ts"
-        issue: "createUser() calls generateDailyQuestsForUser (line 65) — every new user gets the static path, bypassing the engine for their first daily quest set."
-    missing:
-      - "Update generateDailyQuestsForUser in questService.ts to call POST /api/quests/daily (via fetch) or call generateDynamicDailyQuests directly after fetching level + job_class."
-      - "Alternatively, remove generateDailyQuestsForUser entirely and route userService.ts to call the POST /api/quests/daily route."
+verified: 2026-03-19T12:30:00Z
+status: passed
+score: 5/5 must-haves verified
+re_verification:
+  previous_status: gaps_found
+  previous_score: 4/5
+  gaps_closed:
+    - "All paths to quest generation use the dynamic engine (no fixed template bypasses)"
+  gaps_remaining: []
+  regressions: []
 human_verification:
   - test: "Visual badge rendering — complete a full day cycle and observe EASY/NORMAL/HARD labels on quest cards"
     expected: "Each card shows a small badge in the top-right corner with correct color (green/cyan/red) matching the difficulty label"
     why_human: "CSS opacity-slash syntax and absolute positioning can only be confirmed in a rendered browser view"
   - test: "Anti-repeat across days — generate quests two days in a row and compare quest type lists"
-    expected: "The second day's 4 types should differ from the first day's 4 types (no exact repeat set)"
-    why_human: "Requires actual database state with a real user's yesterday row; cannot simulate with grep"
-  - test: "Difficulty escalation — log in as a user with 3 consecutive all_completed=true days and trigger quest generation"
-    expected: "Quests have difficulty=HARD and targets ~20% above the baseline for that level"
-    why_human: "Requires real Supabase data and live POST /api/quests/daily call"
+    expected: "The second day's 4 types should differ from the first day's 4 types (anti-repeat logic active)"
+    why_human: "Requires actual database state with a real user and date-advancing; cannot simulate with static file analysis"
+  - test: "Difficulty escalation with history — seed a user with 3 consecutive all_completed=true days and trigger quest generation"
+    expected: "Response quests have difficulty=HARD and targets ~20% above baseline for the user's level"
+    why_human: "Requires live Supabase data and an active server to trace the full request path"
 ---
 
 # Phase 8: Dynamic Daily Quest Generation — Verification Report
 
-**Phase Goal:** Replace fixed quest templates with a level-adaptive generation engine. Quests scale in difficulty and variety based on hunter level and recent completion history.
-**Verified:** 2026-03-19
-**Status:** gaps_found — 4 of 5 must-haves verified; 1 partial (bypass path not updated)
-**Re-verification:** No — initial verification
+**Phase Goal:** Replace fixed quest templates with a dynamic daily quest engine that generates level-appropriate, job-class-scaled quests for all users including new signups.
+**Verified:** 2026-03-19T12:30:00Z
+**Status:** passed — 5/5 must-haves verified
+**Re-verification:** Yes — after gap closure (plan 08-04, commit `10607d8`)
 
 ---
 
@@ -42,13 +37,13 @@ human_verification:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | Engine generates 4 quests scaled to hunter level with job-class modifiers | VERIFIED | `generateDynamicDailyQuests` uses `Math.max(10, Math.floor(level * 2))` base and applies `JOB_CLASS_MODIFIERS[jobClass]` per stat key (questEngine.ts lines 153-163) |
+| 1 | Engine generates 4 quests scaled to hunter level with job-class modifiers | VERIFIED | `generateDynamicDailyQuests` uses `Math.max(10, Math.floor(level * 2))` base and applies `JOB_CLASS_MODIFIERS[jobClass]` per stat key (questEngine.ts lines 154-163) |
 | 2 | Quest types rotate daily (date-seeded) and avoid yesterday's types (anti-repeat) | VERIFIED | `selectQuestTypes(dateStr, previousTypes)` hashes dateStr to LCG seed, filters previous types from pool, fills from excluded only if needed (questEngine.ts lines 81-102) |
-| 3 | Difficulty adapts from last 3 days of completion history (±20%) | VERIFIED | `computeHistoryAdjustment` maps completion rate 0→1 to multiplier 0.8→1.2; route queries `.in("quest_date", threeDaysAgo)` and passes result to engine (route.ts lines 61-73, questEngine.ts lines 114-135) |
-| 4 | QuestBoard displays difficulty badge per card (EASY/NORMAL/HARD) with correct colors | VERIFIED | Conditional badge block at QuestBoard.tsx lines 171-186 with aria-label, absolute top-right z-20, correct hex colors per UI-SPEC |
-| 5 | All paths to quest generation use the dynamic engine (no fixed template bypasses) | PARTIAL | POST /api/quests/daily uses dynamic engine correctly. However `questService.ts::generateDailyQuestsForUser()` remains as a static-template fallback, called by `userService.ts::createUser()` for every new user signup |
+| 3 | Difficulty adapts from last 3 days of completion history (+/-20%) | VERIFIED | `computeHistoryAdjustment` maps completion rate 0-1 to multiplier 0.8-1.2; route queries `.in("quest_date", threeDaysAgo)` and passes result to engine (route.ts lines 60-88, questEngine.ts lines 114-145) |
+| 4 | QuestBoard displays difficulty badge per card (EASY/NORMAL/HARD) with correct colors | VERIFIED | Conditional badge block at QuestBoard.tsx lines 172-184 with aria-label, absolute top-right z-20, correct hex colors (green/cyan/red) per UI-SPEC |
+| 5 | All paths to quest generation use the dynamic engine (no fixed template bypasses) | VERIFIED | `questService.ts::generateDailyQuestsForUser()` now imports and calls `generateDynamicDailyQuests` (line 2 import, line 96 call). Static array eliminated. `userService.ts` call chain intact at line 65. Commit `10607d8`. |
 
-**Score:** 4/5 truths fully verified
+**Score:** 5/5 truths verified
 
 ---
 
@@ -56,10 +51,10 @@ human_verification:
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/lib/game/questEngine.ts` | Core engine with 3 exports + pool + seeding helpers | VERIFIED | 178 lines, substantive. Exports `selectQuestTypes`, `computeHistoryAdjustment`, `generateDynamicDailyQuests`. All seeding internals (dateToSeed, makeRng, shuffle) present. |
-| `src/lib/services/questService.ts` | `DailyQuestItem` extended with `difficulty?` | VERIFIED | Line 12: `difficulty?: "EASY" \| "NORMAL" \| "HARD"` present in interface |
-| `src/app/api/quests/daily/route.ts` | POST handler uses dynamic engine; fetches 3-day history and yesterday's types | VERIFIED | Import is `generateDynamicDailyQuests` from questEngine (line 3). 3-day history query at lines 61-73. Yesterday's types extraction at lines 76-85. Engine called with all 5 args at line 88. |
-| `src/components/arise/QuestBoard.tsx` | Difficulty badge on each quest card + empty state | VERIFIED | Badge block lines 171-186 (conditional on `quest.difficulty`, correct colors). Empty state block lines 241-250. |
+| `src/lib/game/questEngine.ts` | Core engine with 3 exports + pool + seeding helpers | VERIFIED | Exports `selectQuestTypes`, `computeHistoryAdjustment`, `generateDynamicDailyQuests`. Seeding internals present. JOB_CLASS_MODIFIERS imported from xpEngine. |
+| `src/lib/services/questService.ts` | `generateDailyQuestsForUser` calls dynamic engine; `DailyQuestItem` has `difficulty?` | VERIFIED | Line 2: `import { generateDynamicDailyQuests } from "@/lib/game/questEngine"`. Line 96: `generateDynamicDailyQuests(level, jobClass, today, [], [])`. Line 13: `difficulty?: "EASY" | "NORMAL" | "HARD"`. No static array. |
+| `src/app/api/quests/daily/route.ts` | POST handler uses dynamic engine; fetches 3-day history and yesterday's types | VERIFIED | Import at line 3. 3-day history query present. Yesterday's types extraction present. Engine called at line 88 with all 5 args. |
+| `src/components/arise/QuestBoard.tsx` | Difficulty badge on each quest card + empty state | VERIFIED | Badge block lines 172-184 (conditional on `quest.difficulty`, correct colors). Empty state block present. |
 
 ---
 
@@ -67,63 +62,80 @@ human_verification:
 
 | From | To | Via | Status | Details |
 |------|----|-----|--------|---------|
-| `route.ts` POST | `questEngine.ts` | `import { generateDynamicDailyQuests }` | WIRED | Line 3 import confirmed. Called at line 88 with `(level, jobClass, date, historyRows, previousTypes)` |
-| `questEngine.ts` | `xpEngine.ts` | `import { JOB_CLASS_MODIFIERS }` | WIRED | Line 7 import confirmed. `JOB_CLASS_MODIFIERS` includes `NONE` key (xpEngine.ts line 170) — fallback resolves safely |
-| `questEngine.ts` | `questService.ts` | `import { DailyQuestItem }` | WIRED | Line 8 import confirmed. Return type of `generateDynamicDailyQuests` is `DailyQuestItem[]` |
-| `QuestBoard.tsx` | `questService.ts` | `getDailyQuests` fetch | WIRED | Line 6 import + called in useEffect (line 34). Quest data passed to card map with `quest.difficulty` reference at line 172. |
-| `route.ts` | supabase `daily_quests` | 3-day history query | WIRED | `.select("all_completed").eq("user_id", userId).in("quest_date", threeDaysAgo)` at lines 67-71 |
-| `route.ts` | supabase `daily_quests` | yesterday's types query | WIRED | `.select("quests").eq("user_id", userId).eq("quest_date", threeDaysAgo[0]).maybeSingle()` at lines 76-81 |
-| `userService.ts` | `questService.ts` | `generateDailyQuestsForUser` (bypass) | ORPHANED/BROKEN | Called at userService.ts line 65 for new user creation. This function uses static hardcoded quests (4 fixed types, fixed targets), not the dynamic engine. New users receive static quests on signup. |
+| `route.ts` POST | `questEngine.ts` | `import { generateDynamicDailyQuests }` | WIRED | Line 3 import. Called at line 88 with `(level, jobClass, date, historyRows, previousTypes)` |
+| `questEngine.ts` | `xpEngine.ts` | `import { JOB_CLASS_MODIFIERS }` | WIRED | Line 7 import. `JOB_CLASS_MODIFIERS` includes `NONE` key — fallback resolves safely |
+| `questEngine.ts` | `questService.ts` | `import { DailyQuestItem }` | WIRED | Line 8 import. Return type of `generateDynamicDailyQuests` is `DailyQuestItem[]` |
+| `QuestBoard.tsx` | `questService.ts` | `getDailyQuests` fetch | WIRED | Import present. Called in useEffect. `quest.difficulty` referenced at line 172. |
+| `route.ts` | supabase `daily_quests` | 3-day history query | WIRED | `.select("all_completed").eq("user_id", userId).in("quest_date", threeDaysAgo)` |
+| `route.ts` | supabase `daily_quests` | yesterday's types query | WIRED | `.select("quests").eq("user_id", userId).eq("quest_date", threeDaysAgo[0]).maybeSingle()` |
+| `userService.ts` | `questService.ts` | `generateDailyQuestsForUser` | WIRED | Line 2 import, line 65 call. `generateDailyQuestsForUser` internally calls `generateDynamicDailyQuests` — chain is `userService -> questService -> questEngine`. |
+| `questService.ts` | `questEngine.ts` | `import { generateDynamicDailyQuests }` | WIRED | Line 2 import. Called at line 96 with `(level, jobClass, today, [], [])`. Level and jobClass fetched from `users` table lines 87-93. |
 
 ---
 
 ## Requirements Coverage
 
-No `REQUIREMENTS.md` file exists in `.planning/`. Requirements were derived from plan frontmatter and phase goal. No orphaned requirement IDs to flag.
+No `REQUIREMENTS.md` file exists in `.planning/`. Requirements were derived from plan frontmatter and phase goal.
 
 | Requirement | Source Plan | Description | Status |
 |-------------|-------------|-------------|--------|
 | 7-type quest pool with statKey modifiers | 08-01 | PUSHUP, SQUAT, SITUP, CARDIO, BURPEE, PLANK, LUNGE each mapped to strength/vitality/agility | SATISFIED |
 | Date-seeded deterministic generation | 08-01 | Same date always produces same quest type set for all users | SATISFIED |
 | Anti-repeat (exclude yesterday's types) | 08-01 | `selectQuestTypes` filters previousTypes from pool before shuffling | SATISFIED |
-| 3-day history adaptation ±20% | 08-01 | `computeHistoryAdjustment` maps completion rate to 0.8–1.2 multiplier | SATISFIED |
+| 3-day history adaptation +/-20% | 08-01 | `computeHistoryAdjustment` maps completion rate to 0.8-1.2 multiplier | SATISFIED |
 | `difficulty` field on `DailyQuestItem` | 08-01 | Optional field with EASY/NORMAL/HARD union type | SATISFIED |
-| POST route wired to dynamic engine | 08-02 | `generateDailyQuestTargets` replaced with `generateDynamicDailyQuests` in API route | SATISFIED |
+| POST route wired to dynamic engine | 08-02 | `generateDynamicDailyQuests` imported and called in API route | SATISFIED |
 | POST route fetches 3-day history | 08-02 | `.in("quest_date", threeDaysAgo)` query present | SATISFIED |
 | POST route fetches yesterday's types | 08-02 | `.maybeSingle()` query on threeDaysAgo[0] present | SATISFIED |
 | Difficulty badge in QuestBoard | 08-03 | Absolute top-right badge, conditional on `quest.difficulty` | SATISFIED |
 | Empty state in QuestBoard | 08-03 | Renders when `dailyQuests.length === 0` and not loading/error | SATISFIED |
-| New user quest generation uses dynamic engine | 08-02 (implicit) | Phase goal: "Replace fixed quest templates" | NOT SATISFIED — `generateDailyQuestsForUser` in questService.ts still uses static templates and is called by userService.ts for every new user |
+| New user quest generation uses dynamic engine | 08-04 | `generateDailyQuestsForUser` calls `generateDynamicDailyQuests` after fetching user's level and job_class | SATISFIED — static array removed, dynamic path active for all users |
 
 ---
 
 ## Anti-Patterns Found
 
-| File | Line | Pattern | Severity | Impact |
-|------|------|---------|----------|--------|
-| `src/lib/services/questService.ts` | 85-90 | Static hardcoded quest array: 4 fixed types, fixed targets (60/60/60/4), no level/jobClass lookup | BLOCKER | New users on signup always receive non-adaptive quests via `userService.ts::createUser()`. Phase goal ("replace fixed quest templates") is not fully achieved — the static path co-exists and is actively called. |
-| `src/lib/services/questService.ts` | 72-100 | `generateDailyQuestsForUser` — entire function is a static-template fallback that predates the dynamic engine. It was not removed or updated when the API route was wired. | BLOCKER | Acts as a shadow implementation that silently bypasses the new engine for the new user path. |
+None. The static hardcoded quest array that was flagged as a blocker in the initial verification has been removed. No new anti-patterns introduced by plan 08-04.
 
 ---
 
-## Commit Verification
+## Gap Closure Verification (08-04)
 
-All three commits claimed in SUMMARY.md verified in git log:
+The single gap from the initial verification has been closed.
+
+**Gap:** `questService.ts::generateDailyQuestsForUser()` used a static array of 4 fixed quests (Push-Ups 60, Squats 60, Sit-Ups 60, Running 4km), called by `userService.ts::createUser()` for every new user.
+
+**Fix applied (commit `10607d8`):**
+- Added `import { generateDynamicDailyQuests } from "@/lib/game/questEngine"` at line 2
+- Replaced static array with: fetch `level` and `job_class` from `users` table (lines 87-93), then call `generateDynamicDailyQuests(level, jobClass, today, [], [])`
+- `userService.ts` is unchanged — call chain `userService -> questService -> questEngine` preserved
+
+**Verification commands and results:**
+- `grep -n "generateDynamicDailyQuests" questService.ts` — 2 matches (line 2 import + line 96 call): PASS
+- `grep -n "target: 60|Push-Ups|Squats|Sit-Ups" questService.ts` — 0 matches: PASS
+- `grep -n "generateDailyQuestsForUser" userService.ts` — 2 matches (import + line 65): PASS
+
+---
+
+## Commit Record
 
 | Hash | Plan | Description | Status |
 |------|------|-------------|--------|
 | `536a5d6` | 08-01 | feat(08-01): questEngine — 7-type pool, date-seeded rotation, history adaptation | CONFIRMED |
 | `8896027` | 08-02 | feat(08-02): wire dynamic quest engine into POST /api/quests/daily | CONFIRMED |
 | `830e96c` | 08-03 | feat(08-03): QuestBoard difficulty badge + empty state | CONFIRMED |
+| `10607d8` | 08-04 | feat(08-04): replace static quest array in generateDailyQuestsForUser with dynamic engine call | CONFIRMED |
 
 ---
 
 ## Human Verification Required
 
+Automated checks pass for all 5 truths. The following items require human testing to confirm end-to-end behavior:
+
 ### 1. Difficulty Badge Visual Rendering
 
-**Test:** Load QuestBoard for a user with generated quests, inspect each card in the top-right corner.
-**Expected:** A small labeled badge (EASY/NORMAL/HARD) appears in the top-right of each quest card with matching color (green/cyan/red) and does not overlap the XP display.
+**Test:** Load QuestBoard for a user with generated quests. Inspect each card in the top-right corner.
+**Expected:** A small labeled badge (EASY/NORMAL/HARD) appears in the top-right of each quest card with the matching color (green/cyan/red) and does not overlap the XP display.
 **Why human:** CSS opacity-slash syntax (`bg-[#10B981]/10`) and z-index stacking require a rendered browser to confirm visual correctness.
 
 ### 2. Anti-Repeat Validation Across Days
@@ -135,22 +147,24 @@ All three commits claimed in SUMMARY.md verified in git log:
 ### 3. Difficulty Escalation with History
 
 **Test:** Seed a user with 3 consecutive `all_completed=true` rows in `daily_quests`, then call `POST /api/quests/daily`.
-**Expected:** Response quests have `difficulty="HARD"` and targets ~20% above baseline for the user's level.
+**Expected:** Response quests have `difficulty="HARD"` and targets approximately 20% above baseline for the user's level.
 **Why human:** Requires live Supabase data and an active server to trace the full request path.
 
 ---
 
-## Gaps Summary
+## Summary
 
-The primary gap is a **static-template bypass path** that was not removed when the dynamic engine was wired into the API route.
+Phase 08 goal is achieved. All 5 must-haves are verified.
 
-**Root cause:** Plan 08-02 focused on updating `POST /api/quests/daily`. It did not address the secondary quest generation path in `questService.ts::generateDailyQuestsForUser()`, which predates the engine and continues to be called by `userService.ts::createUser()` for every new account.
+The dynamic quest engine (`questEngine.ts`) is the sole path for all daily quest generation:
 
-**Impact scope:** Every new user receives their first daily quest set via the static path. Returning users (who already have a today-row) hit the API route and get dynamic quests. The split creates inconsistent behavior depending on whether the user is new or returning.
+- **Returning users** receive quests via `POST /api/quests/daily`, which calls `generateDynamicDailyQuests` with 3-day history and previous types for difficulty adaptation and anti-repeat.
+- **New users on signup** receive quests via `userService.ts -> questService.ts::generateDailyQuestsForUser()`, which now calls `generateDynamicDailyQuests` with the user's real level and job_class, and empty arrays for history (correct for a brand-new hunter — `computeHistoryAdjustment([])` returns `{ multiplier: 1.0, difficulty: "NORMAL" }` gracefully).
 
-**Fix required:** `generateDailyQuestsForUser` in `questService.ts` should be updated to call `POST /api/quests/daily` (via `fetch`) or removed and replaced with a direct call to `generateDynamicDailyQuests` after fetching `level` and `job_class` from Supabase. The static quest array at lines 85-90 must be eliminated.
+The static hardcoded array that bypassed the engine for new users was eliminated in plan 08-04. No static templates remain anywhere in the quest generation pipeline. The phase goal "replace fixed quest templates with a dynamic daily quest engine" is fully satisfied for all users.
 
 ---
 
-_Verified: 2026-03-19_
+_Verified: 2026-03-19T12:30:00Z_
 _Verifier: Claude (gsd-verifier)_
+_Re-verification after gap closure: plan 08-04, commit `10607d8`_
