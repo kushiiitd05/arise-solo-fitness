@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 12-03-PLAN.md — awaiting human verify checkpoint
-last_updated: "2026-03-19T05:46:21.399Z"
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-03-19T07:44:57.196Z"
 progress:
   total_phases: 14
   completed_phases: 11
-  total_plans: 31
-  completed_plans: 29
+  total_plans: 33
+  completed_plans: 30
 ---
 
 # GSD State
@@ -18,10 +18,10 @@ progress:
 in-progress
 
 ## Current Phase
-12
+13
 
 ## Current Plan
-12-02 complete
+13-01 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -128,6 +128,9 @@ in-progress
 - [Phase 12-02]: Server-only chapter unlock enforced — no client-side unlockNextChapter/getChapterUrl calls remain; chapter_newly_unlocked boolean returned for client to consume
 - [Phase 12]: awardRaidReward calls /api/boss/complete after /api/xp/award in the same function to return chapter_newly_unlocked — no double increment risk
 - [Phase 12]: handleChapterUnlocked lives in Dashboard (not page.tsx) — Dashboard owns ceremony state alongside RankUpCeremony for consistent pattern
+- [Phase 13-ollama-ai-integration]: OLLAMA_MODEL reads NEXT_PUBLIC_OLLAMA_MODEL env var, falls back to 'llama3' — single source of truth in ollamaClient.ts
+- [Phase 13-ollama-ai-integration]: format:'json' is opt-in — only arenaPrompt passes it; plain text surfaces omit to avoid Ollama wrapping responses
+- [Phase 13-ollama-ai-integration]: aiCache lives at module level not useState — session-scoped, resets on page reload, no persistence needed
 
 ## Blockers
 - None
@@ -137,5 +140,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 12-03-PLAN.md — awaiting human verify checkpoint
+Stopped at: Completed 13-01-PLAN.md
 Date: 2026-03-19T05:42:30Z
