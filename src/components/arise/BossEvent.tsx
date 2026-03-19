@@ -7,6 +7,9 @@ import { getActiveBoss, subscribeToBossUpdates, dealDamage, awardRaidReward, BOS
 import type { WorldBoss } from "@/lib/services/bossService";
 import { BOSS_ROSTER } from "@/lib/data/bossRoster";
 import type { GameState } from "@/lib/gameReducer";
+import { generateBossBlurb } from '@/lib/ai/prompts/bossPrompt';
+import { aiCache } from '@/lib/ai/sessionCache';
+import { TypingText } from '@/components/system/TypingText';
 
 interface BossEventProps {
   state: GameState;
@@ -162,6 +165,7 @@ export default function BossEvent({ state, dispatch, onChapterUnlocked }: BossEv
   const [raidXp, setRaidXp] = useState(500);
   const [isAttacking, setIsAttacking] = useState(false);
   const [hpShake, setHpShake] = useState(false);
+  const [aiBlurb, setAiBlurb] = useState<string | null>(null);
 
   const userLevel = state?.user?.level || 1;
   const userId = state?.user?.id || "";
@@ -201,6 +205,28 @@ export default function BossEvent({ state, dispatch, onChapterUnlocked }: BossEv
     const t = setInterval(tick, 1000);
     return () => clearInterval(t);
   }, [boss]);
+
+  // AI personality blurb — fires once when boss loads, cached per boss.id
+  useEffect(() => {
+    if (!boss) return;
+    const bossTemplate = BOSS_ROSTER.find(b => b.name === boss.name);
+    const bossRank = bossTemplate?.rank ?? 'S';
+    const playerRank = state?.user?.rank ?? 'E';
+    const cacheKey = `boss:${boss.id}`;
+
+    if (aiCache.has(cacheKey)) {
+      setAiBlurb(aiCache.get(cacheKey));
+      return;
+    }
+
+    generateBossBlurb(boss.name, bossRank, playerRank).then((blurb) => {
+      if (blurb) {
+        aiCache.set(cacheKey, blurb);
+        setAiBlurb(blurb);
+      }
+      // null = Ollama unavailable — aiBlurb stays null, nothing renders
+    });
+  }, [boss?.id]); // dep: boss.id only — stable, prevents re-fire on HP updates
 
   const spawnFloatingDmg = (dmg: number) => {
     const id = Date.now();
@@ -400,6 +426,13 @@ export default function BossEvent({ state, dispatch, onChapterUnlocked }: BossEv
               </span>
             ))}
           </div>
+
+          {/* AI personality flavor blurb — additive, shows only when Ollama responds */}
+          {aiBlurb && (
+            <div className="mt-3 mb-5 text-[10px] font-mono text-red-300/80 italic border-t border-red-900/20 pt-3">
+              <TypingText text={aiBlurb} speedMs={22} />
+            </div>
+          )}
 
           {/* Action buttons */}
           <div className="flex gap-3">
