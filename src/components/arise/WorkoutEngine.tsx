@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Camera, CameraOff, Zap, CheckCircle2, X, Loader2, RefreshCw, Target, Eye } from "lucide-react";
+import { Play, Pause, Camera, CameraOff, Zap, CheckCircle2, X, Loader2, RefreshCw, Target, Eye, HelpCircle } from "lucide-react";
 import { COLORS } from "@/lib/constants";
 import { GameState, calculateIntensityRank } from "@/lib/gameReducer";
 import { awardXp, logWorkout } from "@/lib/services/xpService";
@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { generateWorkoutTagline } from '@/lib/ai/prompts/workoutPrompt';
 import { aiCache } from '@/lib/ai/sessionCache';
 import { TypingText } from '@/components/system/TypingText';
+import { ExerciseGuideModal } from "@/components/arise/ExerciseGuideModal";
 
 interface WorkoutEngineProps {
   state: GameState;
@@ -26,6 +27,7 @@ export default function WorkoutEngine({ state, dispatch, onClose, onChapterUnloc
   const userRank = state.user.rank;
   const jobClass = state.user.jobClass as any;
   const mp = (state.user.stats as any)?.mana || 0;
+  const userId = state.user.id ?? "";
 
   // AI DIFFICULTY SCALING
   const baseDifficulty = 10 + Math.floor(userLevel * 0.75);
@@ -48,6 +50,7 @@ export default function WorkoutEngine({ state, dispatch, onClose, onChapterUnloc
   const [arLoading, setArLoading] = useState(false);
   const [loadingMissions, setLoadingMissions] = useState(true);
   const [workoutTagline, setWorkoutTagline] = useState<string | null>(null);
+  const [guideExercise, setGuideExercise] = useState<Exercise | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
@@ -347,6 +350,19 @@ export default function WorkoutEngine({ state, dispatch, onClose, onChapterUnloc
                       <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">{ex.muscle} · +{ex.xpPerRep} XP BASE</div>
                     </div>
                     {selectedExercise?.id === ex.id && <Zap size={18} className="text-secondary animate-pulse relative z-10" />}
+                    {/* Guide button — absolute top-right corner */}
+                    <button
+                      type="button"
+                      aria-label="View Exercise Guide"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        systemAudio?.playClick();
+                        setGuideExercise(ex);
+                      }}
+                      className="absolute top-2 right-2 p-3 text-cyan-400 opacity-60 hover:opacity-100 transition-opacity z-20"
+                    >
+                      <HelpCircle size={14} />
+                    </button>
                   </button>
                 ))}
               </div>
@@ -454,6 +470,23 @@ export default function WorkoutEngine({ state, dispatch, onClose, onChapterUnloc
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Exercise Guide Modal */}
+      <AnimatePresence>
+        {guideExercise && (
+          <ExerciseGuideModal
+            exercise={{
+              id: guideExercise.id,
+              name: guideExercise.name,
+              description: guideExercise.description,
+            }}
+            userId={userId}
+            currentMana={mp}
+            onClose={() => setGuideExercise(null)}
+            onManaSpent={() => dispatch({ type: "USE_MANA", payload: 1 })}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
