@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { generateDynamicDailyQuests } from "@/lib/game/questEngine";
 
 export interface DailyQuestItem {
   id: string;
@@ -82,12 +83,17 @@ export async function generateDailyQuestsForUser(userId: string) {
 
   if (existing && existing.length > 0) return;
 
-  const quests: DailyQuestItem[] = [
-    { id: crypto.randomUUID(), name: "Push-Ups",     icon: "💪", type: "PUSHUP",  target: 60, current: 0, xp_reward: 150, completed: false },
-    { id: crypto.randomUUID(), name: "Squats",       icon: "🦵", type: "SQUAT",   target: 60, current: 0, xp_reward: 150, completed: false },
-    { id: crypto.randomUUID(), name: "Sit-Ups",      icon: "🔥", type: "SITUP",   target: 60, current: 0, xp_reward: 150, completed: false },
-    { id: crypto.randomUUID(), name: "Running (km)", icon: "🏃", type: "RUNNING", target: 4,  current: 0, xp_reward: 200, completed: false },
-  ];
+  // Fetch user's level and job_class for dynamic quest scaling
+  const { data: userRow } = await supabase
+    .from("users")
+    .select("level, job_class")
+    .eq("id", userId)
+    .limit(1);
+  const level = userRow && userRow.length > 0 ? (userRow[0].level ?? 1) : 1;
+  const jobClass = userRow && userRow.length > 0 ? (userRow[0].job_class ?? "NONE") : "NONE";
+
+  // New user has no history and no previousTypes — pass empty arrays
+  const quests = generateDynamicDailyQuests(level, jobClass, today, [], []);
 
   await supabase.from("daily_quests").insert({
     user_id: userId,
