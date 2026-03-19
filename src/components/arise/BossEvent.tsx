@@ -11,6 +11,7 @@ import type { GameState } from "@/lib/gameReducer";
 interface BossEventProps {
   state: GameState;
   dispatch: React.Dispatch<any>;
+  onChapterUnlocked?: (newCount: number) => void;
 }
 
 interface FloatingDmg {
@@ -151,7 +152,7 @@ function MiniWorkoutModal({ onComplete, onCancel }: { onComplete: (reps: number)
 }
 
 // ──────────────────── MAIN COMPONENT ─────────────────────
-export default function BossEvent({ state, dispatch }: BossEventProps) {
+export default function BossEvent({ state, dispatch, onChapterUnlocked }: BossEventProps) {
   const [boss, setBoss] = useState<WorldBoss | null>(null);
   const [timeStr, setTimeStr] = useState("");
   const [floatingDmgs, setFloatingDmgs] = useState<FloatingDmg[]>([]);
@@ -222,7 +223,10 @@ export default function BossEvent({ state, dispatch }: BossEventProps) {
       const xpForKill = BOSS_RANK_XP[bossTemplate?.rank ?? ""] ?? 500;
       setRaidXp(xpForKill);
       setShowVictory(true);
-      await awardRaidReward(userId, xpForKill);
+      const rewardResult = await awardRaidReward(userId, xpForKill);
+      if (rewardResult?.chapter_newly_unlocked && onChapterUnlocked) {
+        onChapterUnlocked(rewardResult.chapters_unlocked);
+      }
       dispatch({
         type: "ADD_NOTIFICATION",
         payload: {
@@ -234,7 +238,7 @@ export default function BossEvent({ state, dispatch }: BossEventProps) {
       });
     }
     setIsAttacking(false);
-  }, [boss, userId, userLevel, dispatch]);
+  }, [boss, userId, userLevel, dispatch, onChapterUnlocked]);
 
   const handleRetreat = () => {
     setShowRetreatModal(false);
