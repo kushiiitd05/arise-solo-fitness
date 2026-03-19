@@ -143,13 +143,14 @@ Plans:
 - [x] 11-03-PLAN.md — Arena.tsx wired to real battle API — reps input, result card, MOCK_HISTORY removal, live history fetch
 
 ### Phase 12: Manhwa Chapter Reward System
-**Goal**: Unlock manhwa chapters as rewards on quest completion and boss kills. Chapter unlock UI, reader integration, and reward trigger events
+**Goal**: Unlock manhwa chapters as rewards for quest completion and boss kills. External-link chapter list, full-screen unlock ceremony, server-side chapters_unlocked counter on users table
 **Depends on**: Phase 8
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 12-01: Chapter unlock gating + reward trigger on quest/boss completion
-- [ ] 12-02: Chapter unlock UI + Reader integration (re-enable Reader.tsx)
+- [ ] 12-01-PLAN.md — DB migration (chapters_unlocked column), Wave 0 vitest scaffolds, CHAPTER notification duration fix (6500ms)
+- [ ] 12-02-PLAN.md — Server-side chapters_unlocked increment in POST /api/boss/complete + POST /api/quests/update, remove old rank-based chapter unlock from WorkoutEngine
+- [ ] 12-03-PLAN.md — ChapterUnlockCeremony component, session init mapping in page.tsx, Dashboard chapter onClick handlers + ceremony state, BossEvent/WorkoutEngine callback wiring
 
 ### Phase 13: Ollama AI Integration
 **Goal**: Wire local Ollama LLM to generate dynamic monster names, boss personalities, quest descriptions, and workout challenge variations — making each run feel unique
