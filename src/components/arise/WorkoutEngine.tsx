@@ -15,9 +15,10 @@ interface WorkoutEngineProps {
   state: GameState;
   dispatch: React.Dispatch<any>;
   onClose: () => void;
+  onChapterUnlocked?: (newCount: number) => void;
 }
 
-export default function WorkoutEngine({ state, dispatch, onClose }: WorkoutEngineProps) {
+export default function WorkoutEngine({ state, dispatch, onClose, onChapterUnlocked }: WorkoutEngineProps) {
   const userLevel = state.user.level;
   const userRank = state.user.rank;
   const jobClass = state.user.jobClass as any;
@@ -195,6 +196,10 @@ export default function WorkoutEngine({ state, dispatch, onClose }: WorkoutEngin
                     icon: "🏆",
                   },
                 });
+                // Fire chapter unlock ceremony if server unlocked a new chapter
+                if (result.chapter_newly_unlocked && onChapterUnlocked) {
+                  onChapterUnlocked(result.chapters_unlocked);
+                }
               }
             }
           }
