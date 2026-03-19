@@ -20,7 +20,7 @@ fitness experience with AI, combat, ranked progression, and manhwa rewards.
 - [x] **Phase 10: Shadow Army Mechanics** - Formalized shadow extraction/reward flow, shadow stats, army composition rules (completed 2026-03-18)
 - [x] **Phase 11: Battle System Backend** - Arena battles via backend API using real player stats, replacing client-side simulation (completed 2026-03-18)
 - [x] **Phase 12: Manhwa Chapter Reward System** - Chapter unlock UI on quest/boss completion, reader integration, reward trigger events (completed 2026-03-19)
-- [ ] **Phase 13: Ollama AI Integration** - Dynamic monster names, boss personalities, quest descriptions, workout challenge variations via local LLM
+- [x] **Phase 13: Ollama AI Integration** - Dynamic monster names, boss personalities, quest descriptions, workout challenge variations via local LLM (completed 2026-03-19)
 - [ ] **Phase 14: QA & Hardening** - E2E test, RLS audit, error boundaries across full system
 
 ## Phase Details
