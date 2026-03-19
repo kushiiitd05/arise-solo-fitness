@@ -16,7 +16,7 @@ const DISMISS_DURATIONS: Record<string, number> = {
   WORKOUT:     4500,
   REWARD:      5000,
   SHADOW:      5000,
-  CHAPTER:     5000,
+  CHAPTER:     6500,
   GUILD:       5000,
   PVP:         5000,
   ACHIEVEMENT: 5000,
