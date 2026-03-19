@@ -165,11 +165,11 @@ Plans:
 ### Phase 14: QA & Hardening
 **Goal**: Full E2E test of signup→quest→levelup→rank trial flow, RLS audit, error boundaries across all systems built in phases 1–13
 **Depends on**: Phase 13
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 14-01: Error boundaries + loading state audit across all panels
-- [ ] 14-02: RLS policy verification + full auth flow E2E test
+- [ ] 14-01-PLAN.md — ErrorBoundary class component + wrap all 14 Dashboard panels individually
+- [ ] 14-02-PLAN.md — arena_battles RLS migration + auth gap patches (xp/award, quests/daily) + game flow integration test
 
 ### Phase 15: Exercise Guidance System
 **Goal**: AI-powered per-exercise modal with step-by-step Ollama instructions (text-only default), mana-gated visual mode via Pollinations.ai, DB-cached guides shared across users
