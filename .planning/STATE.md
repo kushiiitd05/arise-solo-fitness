@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 13-02-PLAN.md
-last_updated: "2026-03-19T07:55:31.193Z"
+stopped_at: Phase 15 context gathered
+last_updated: "2026-03-19T09:03:17.662Z"
 progress:
-  total_phases: 14
+  total_phases: 15
   completed_phases: 12
   total_plans: 33
   completed_plans: 31
@@ -144,6 +144,11 @@ in-progress
 Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of session.
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
+## Accumulated Context
+
+### Roadmap Evolution
+- Phase 15 added: Exercise Guidance System — AI-powered step-by-step exercise instructions via Ollama with text-only and visual (image generation) modes. Guides cached per exercise and reused across users.
+
 ## Last Session
-Stopped at: Completed 13-02-PLAN.md
+Stopped at: Phase 15 context gathered
 Date: 2026-03-19T05:42:30Z
