@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 12-02-PLAN.md
-last_updated: "2026-03-19T05:42:30Z"
+stopped_at: Completed 12-03-PLAN.md — awaiting human verify checkpoint
+last_updated: "2026-03-19T05:46:21.399Z"
 progress:
   total_phases: 14
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 31
-  completed_plans: 28
+  completed_plans: 29
 ---
 
 # GSD State
@@ -126,6 +126,8 @@ in-progress
 - [Phase 12-manhwa-chapter-reward-system]: chapters_unlocked uses INTEGER count with DEFAULT 1 — index-based mapping ensures existing users get Chapter 1 without backfill, Wave 0 tests use pure inline logic not route imports
 - [Phase 12-02]: chapters_unlocked increment in quests/update placed after hunter_rank update inside if(user) block — reuses already-fetched user row with expanded SELECT
 - [Phase 12-02]: Server-only chapter unlock enforced — no client-side unlockNextChapter/getChapterUrl calls remain; chapter_newly_unlocked boolean returned for client to consume
+- [Phase 12]: awardRaidReward calls /api/boss/complete after /api/xp/award in the same function to return chapter_newly_unlocked — no double increment risk
+- [Phase 12]: handleChapterUnlocked lives in Dashboard (not page.tsx) — Dashboard owns ceremony state alongside RankUpCeremony for consistent pattern
 
 ## Blockers
 - None
@@ -135,5 +137,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 12-02-PLAN.md
+Stopped at: Completed 12-03-PLAN.md — awaiting human verify checkpoint
 Date: 2026-03-19T05:42:30Z
