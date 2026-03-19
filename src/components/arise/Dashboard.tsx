@@ -27,6 +27,7 @@ import AchievementHall from "./AchievementHall";
 import RankTrialEngine from "./RankTrialEngine";
 import RankUpCeremony from "./RankUpCeremony";
 import ChapterUnlockCeremony from "./ChapterUnlockCeremony";
+import { ErrorBoundary } from "@/components/system/ErrorBoundary";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { systemAudio } from "@/lib/audio";
@@ -353,7 +354,7 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                             ))}
                          </div>
                       </div>
-                      <BossEvent state={state} dispatch={dispatch} onChapterUnlocked={handleChapterUnlocked} />
+                      <ErrorBoundary><BossEvent state={state} dispatch={dispatch} onChapterUnlocked={handleChapterUnlocked} /></ErrorBoundary>
                    </div>
                    <div className="space-y-12">
                       <div className="system-panel p-10 border-[#06B6D4]/30 bg-[#030308]/60 backdrop-blur-3xl shadow-2xl">
@@ -449,7 +450,7 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
 
             {activeTab === "SHADOWS" && (
               <motion.div key="shadows" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="max-w-7xl mx-auto">
-                <ShadowArmy
+                <ErrorBoundary><ShadowArmy
                   userId={user.id}
                   shadows={shadows}
                   stats={stats}
@@ -513,13 +514,13 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                       console.error("[Dashboard] onExtractionChange error:", err);
                     }
                   }}
-                />
+                /></ErrorBoundary>
               </motion.div>
             )}
 
             {activeTab === "STORAGE" && (
               <motion.div key="inv" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="max-w-7xl mx-auto">
-                <Inventory
+                <ErrorBoundary><Inventory
                   userId={user.id}
                   dispatch={dispatch}
                   onEquipChange={async () => {
@@ -555,13 +556,13 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                       },
                     });
                   }}
-                />
+                /></ErrorBoundary>
               </motion.div>
             )}
 
             {activeTab === "GATES" && (
               <motion.div key="gates" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="max-w-7xl mx-auto">
-                <DungeonGate isOpen={true} onEnter={() => setShowWorkout(true)} />
+                <ErrorBoundary><DungeonGate isOpen={true} onEnter={() => setShowWorkout(true)} /></ErrorBoundary>
               </motion.div>
             )}
 
@@ -607,13 +608,13 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                     <div className="absolute bottom-4 right-8 opacity-10 text-[8px] font-black text-[#EF4444] uppercase tracking-[0.5em]">Warning: Neural feedback hazard</div>
                   </div>
                 ) : (
-                  <Arena state={state} dispatch={dispatch} onClose={() => setActiveTab("STATUS")} />
+                  <ErrorBoundary><Arena state={state} dispatch={dispatch} onClose={() => setActiveTab("STATUS")} /></ErrorBoundary>
                 )}
               </motion.div>
             )}
             {activeTab === "GUILD" && (
               <motion.div key="guild" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-4xl mx-auto">
-                <GuildHall state={state} />
+                <ErrorBoundary><GuildHall state={state} /></ErrorBoundary>
               </motion.div>
             )}
           </AnimatePresence>
@@ -622,63 +623,73 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
 
       <AnimatePresence>
         {showProfile && (
-          <Profile
-            state={state}
-            onClose={() => setShowProfile(false)}
-            onTrialStart={() => { setShowProfile(false); setShowTrial(true); }}
-          />
+          <ErrorBoundary>
+            <Profile
+              state={state}
+              onClose={() => setShowProfile(false)}
+              onTrialStart={() => { setShowProfile(false); setShowTrial(true); }}
+            />
+          </ErrorBoundary>
         )}
-        {showQuestBoard && <QuestBoard state={state} dispatch={dispatch} onClose={() => setShowQuestBoard(false)} />}
+        {showQuestBoard && <ErrorBoundary><QuestBoard state={state} dispatch={dispatch} onClose={() => setShowQuestBoard(false)} /></ErrorBoundary>}
         {showWorkout && (
-          <WorkoutEngine
-            state={state}
-            dispatch={dispatch}
-            onClose={() => setShowWorkout(false)}
-            onChapterUnlocked={handleChapterUnlocked}
-          />
+          <ErrorBoundary>
+            <WorkoutEngine
+              state={state}
+              dispatch={dispatch}
+              onClose={() => setShowWorkout(false)}
+              onChapterUnlocked={handleChapterUnlocked}
+            />
+          </ErrorBoundary>
         )}
         {showTrial && (
-          <RankTrialEngine
-            state={state}
-            dispatch={dispatch}
-            onClose={() => setShowTrial(false)}
-            onTrialPass={(result) => {
-              setShowTrial(false);
-              setRankUpResult(result);
-              setShowRankUp(true);
-            }}
-          />
+          <ErrorBoundary>
+            <RankTrialEngine
+              state={state}
+              dispatch={dispatch}
+              onClose={() => setShowTrial(false)}
+              onTrialPass={(result) => {
+                setShowTrial(false);
+                setRankUpResult(result);
+                setShowRankUp(true);
+              }}
+            />
+          </ErrorBoundary>
         )}
         {showRankUp && rankUpResult && (
-          <RankUpCeremony
-            oldRank={rankUpResult.oldRank}
-            newRank={rankUpResult.newRank}
-            xpBonus={rankUpResult.xpBonus}
-            statPoints={rankUpResult.statPoints}
-            dispatch={dispatch}
-            onDismiss={() => {
-              setShowRankUp(false);
-              setRankUpResult(null);
-              // Rank state was already updated by dispatch({ type: "SET_USER" }) inside
-              // RankTrialEngine.handleTrialPass when /api/rank/advance responded successfully.
-              // No additional SET_USER dispatch needed here.
-            }}
-          />
+          <ErrorBoundary>
+            <RankUpCeremony
+              oldRank={rankUpResult.oldRank}
+              newRank={rankUpResult.newRank}
+              xpBonus={rankUpResult.xpBonus}
+              statPoints={rankUpResult.statPoints}
+              dispatch={dispatch}
+              onDismiss={() => {
+                setShowRankUp(false);
+                setRankUpResult(null);
+                // Rank state was already updated by dispatch({ type: "SET_USER" }) inside
+                // RankTrialEngine.handleTrialPass when /api/rank/advance responded successfully.
+                // No additional SET_USER dispatch needed here.
+              }}
+            />
+          </ErrorBoundary>
         )}
         {showChapterUnlock && chapterUnlockData && (
-          <ChapterUnlockCeremony
-            chapterTitle={chapterUnlockData.title}
-            chapterNumber={chapterUnlockData.number}
-            externalUrl={chapterUnlockData.externalUrl}
-            dispatch={dispatch}
-            onDismiss={() => {
-              setShowChapterUnlock(false);
-              setChapterUnlockData(null);
-            }}
-          />
+          <ErrorBoundary>
+            <ChapterUnlockCeremony
+              chapterTitle={chapterUnlockData.title}
+              chapterNumber={chapterUnlockData.number}
+              externalUrl={chapterUnlockData.externalUrl}
+              dispatch={dispatch}
+              onDismiss={() => {
+                setShowChapterUnlock(false);
+                setChapterUnlockData(null);
+              }}
+            />
+          </ErrorBoundary>
         )}
-        {showSettings && <Settings state={state} dispatch={dispatch} onClose={() => setShowSettings(false)} />}
-        {showLeaderboard && <Leaderboard state={state} onClose={() => setShowLeaderboard(false)} />}
+        {showSettings && <ErrorBoundary><Settings state={state} dispatch={dispatch} onClose={() => setShowSettings(false)} /></ErrorBoundary>}
+        {showLeaderboard && <ErrorBoundary><Leaderboard state={state} onClose={() => setShowLeaderboard(false)} /></ErrorBoundary>}
         {showAchievements && (
           <motion.div
             key="achievements"
@@ -688,7 +699,7 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
             transition={{ type: "tween", duration: 0.25 }}
             className="fixed inset-0 z-[200] bg-[#030308] overflow-y-auto"
           >
-            <AchievementHall onClose={() => setShowAchievements(false)} completedIds={completedAchievementIds} />
+            <ErrorBoundary><AchievementHall onClose={() => setShowAchievements(false)} completedIds={completedAchievementIds} /></ErrorBoundary>
           </motion.div>
         )}
       </AnimatePresence>
