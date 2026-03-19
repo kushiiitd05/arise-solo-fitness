@@ -155,11 +155,11 @@ Plans:
 ### Phase 13: Ollama AI Integration
 **Goal**: Wire local Ollama LLM to generate dynamic monster names, boss personalities, quest descriptions, and workout challenge variations — making each run feel unique
 **Depends on**: Phase 12
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 13-01: Ollama API client + streaming integration + prompt templates
-- [ ] 13-02: Wire dynamic generation into QuestBoard, BossEvent, and DungeonGate
+- [ ] 13-01-PLAN.md — ollamaClient.ts shared utility (AbortController timeout, NEXT_PUBLIC_OLLAMA_MODEL config), sessionCache.ts module-level Map, 4 typed prompt functions (boss/quest/workout/arena), TypingText component
+- [ ] 13-02-PLAN.md — Wire BossEvent (AI flavor blurb), QuestBoard (AI lore per quest), WorkoutEngine (AI tagline on select phase), Arena (AI opponent name + taunt via Promise.race)
 
 ### Phase 14: QA & Hardening
 **Goal**: Full E2E test of signup→quest→levelup→rank trial flow, RLS audit, error boundaries across all systems built in phases 1–13
