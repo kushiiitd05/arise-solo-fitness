@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: "Completed 08-04-PLAN.md — gap closure: static quest array removed, dynamic engine wired into generateDailyQuestsForUser"
-last_updated: "2026-03-19T12:07:17.153Z"
+stopped_at: Completed 14-02-PLAN.md — arena_battles RLS, xp/award + quests/daily Bearer auth fixes, gameFlow integration tests
+last_updated: "2026-03-19T16:32:42.826Z"
 progress:
   total_phases: 15
   completed_phases: 14
-  total_plans: 37
-  completed_plans: 38
+  total_plans: 39
+  completed_plans: 39
 ---
 
 # GSD State
@@ -148,6 +148,7 @@ in-progress
 - [Phase 15]: userId extracted directly from state.user.id (string field in GameState) — no any cast needed
 - [Phase 15]: onManaSpent dispatches USE_MANA: 1 via arrow function — WorkoutEngine owns dispatch, modal owns no reducer knowledge
 - [Phase 08-dynamic-daily-quest-generation]: generateDailyQuestsForUser fetches level/job_class inline, passes empty arrays for historyRows/previousTypes for new users — closes last static quest bypass path
+- [Phase 14]: getUserId() defined locally in each route (copy-per-file, Phase 3 pattern); arena_battles SELECT-only RLS (service-role bypasses for writes by design)
 
 ## Blockers
 - None
@@ -162,5 +163,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 - Phase 15 added: Exercise Guidance System — AI-powered step-by-step exercise instructions via Ollama with text-only and visual (image generation) modes. Guides cached per exercise and reused across users.
 
 ## Last Session
-Stopped at: Completed 08-04-PLAN.md — gap closure: static quest array removed, dynamic engine wired into generateDailyQuestsForUser
+Stopped at: Completed 14-02-PLAN.md — arena_battles RLS, xp/award + quests/daily Bearer auth fixes, gameFlow integration tests
 Date: 2026-03-19T11:45:27Z
