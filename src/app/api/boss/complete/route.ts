@@ -14,10 +14,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Read current token count (Supabase v2 has no raw() — must read-then-write)
+  // Read current token count and chapters_unlocked (Supabase v2 has no raw() — must read-then-write)
   const { data: userRow, error: readErr } = await supabase
     .from("users")
-    .select("extraction_tokens")
+    .select("extraction_tokens, chapters_unlocked")
     .eq("id", userId)
     .maybeSingle();
 
@@ -25,11 +25,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const current = userRow.extraction_tokens ?? 0;
+  const currentTokens = userRow.extraction_tokens ?? 0;
+  const currentChapters = userRow.chapters_unlocked ?? 1;
+  const newChapters = Math.min(currentChapters + 1, 4);
+  const chapterUnlocked = newChapters > currentChapters;
 
   const { error: updateErr } = await supabase
     .from("users")
-    .update({ extraction_tokens: current + 1 })
+    .update({
+      extraction_tokens: currentTokens + 1,
+      chapters_unlocked: newChapters,
+    })
     .eq("id", userId);
 
   if (updateErr) {
@@ -37,5 +43,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "DB error" }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, extraction_tokens: current + 1 });
+  return NextResponse.json({
+    success: true,
+    extraction_tokens: currentTokens + 1,
+    chapters_unlocked: newChapters,
+    chapter_newly_unlocked: chapterUnlocked,
+  });
 }
