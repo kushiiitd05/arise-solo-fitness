@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-03-19T11:02:12.467Z"
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-03-19T11:07:30Z"
 progress:
   total_phases: 15
   completed_phases: 12
   total_plans: 36
-  completed_plans: 32
+  completed_plans: 33
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 15
 
 ## Current Plan
-15-01 complete
+15-02 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -56,6 +56,7 @@ in-progress
 - 13-01: ollamaClient + sessionCache + 4 prompt functions (bossPrompt, questPrompt, workoutPrompt, arenaPrompt) + TypingText component (2026-03-19)
 - 13-02: 4 AI surfaces wired — BossEvent blurb, QuestBoard lore (staggered), WorkoutEngine tagline (sequenced), Arena opponent (Promise.race) (2026-03-19)
 - 15-01: exercise_guides + user_exercise_images migration + mana_spent column + GET /api/exercise-guide (3-layer cache) + POST /api/exercise-guide/visual-unlock (mana gate, idempotency) + 10 vitest tests EG-01 through EG-06 (2026-03-19)
+- 15-02: ExerciseGuideModal component — 5 visual states (loading skeleton, text-only guide, visual pending, visual unlocked, mana-insufficient shake), all Framer Motion animations, mana gating, self-contained API calls (2026-03-19)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -139,6 +140,9 @@ in-progress
 - [Phase 13]: QuestBoard stagger 300ms per quest addresses Ollama single-request queue overload (RESEARCH.md pitfall)
 - [Phase 15]: Test module-level mock variables with per-test reset in beforeEach — avoids vitest module cache issues with dynamic imports
 - [Phase 15]: mockEq must remain mockReturnThis() for Supabase chain integrity — update().eq() terminal call awaited as implicit resolved promise
+- [Phase 15-02]: ExerciseGuideModal wraps its own motion.div overlay (not SystemWindow) — SystemWindow y:20 translate conflicts with fixed-position overlay animation
+- [Phase 15-02]: alreadyUnlocked guard in handleVisualUnlock prevents double mana deduction when user reopens a previously unlocked guide
+- [Phase 15-02]: Hover glow uses Tailwind arbitrary shadow value for CSS-native hover; static base glow uses inline style prop on enabled-idle state
 
 ## Blockers
 - None
@@ -153,5 +157,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 - Phase 15 added: Exercise Guidance System — AI-powered step-by-step exercise instructions via Ollama with text-only and visual (image generation) modes. Guides cached per exercise and reused across users.
 
 ## Last Session
-Stopped at: Completed 15-01-PLAN.md
-Date: 2026-03-19T05:42:30Z
+Stopped at: Completed 15-02-PLAN.md
+Date: 2026-03-19T11:07:30Z
