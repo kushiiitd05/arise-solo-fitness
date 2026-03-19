@@ -2,12 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer as supabase } from "@/lib/supabase-server";
 import { xpForLevel } from "@/lib/game/xpEngine";
 
-export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => null);
-  const { userId, amount, reason } = body || {};
+function getUserId(req: NextRequest): string | null {
+  const auth = req.headers.get("authorization");
+  if (auth?.startsWith("Bearer ")) return auth.slice(7);
+  return null;
+}
 
-  if (!userId || !amount || amount <= 0) {
-    return NextResponse.json({ error: "Missing userId or invalid amount" }, { status: 400 });
+export async function POST(req: NextRequest) {
+  const userId = getUserId(req);
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = await req.json().catch(() => null);
+  const { amount, reason } = body || {};
+
+  if (!amount || amount <= 0) {
+    return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
   }
 
   const { data: user, error } = await supabase
