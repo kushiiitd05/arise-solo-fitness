@@ -106,17 +106,43 @@ export async function dealDamage(
   }
 }
 
-/** Award XP to a raid participant via the server-side /api/xp/award route */
-export async function awardRaidReward(userId: string, xp: number) {
-  if (!userId || userId === "local-user") return;
+/** Award XP and chapter unlock for a raid kill. Returns boss/complete response (chapter_newly_unlocked). */
+export async function awardRaidReward(
+  userId: string,
+  xp: number
+): Promise<{ chapter_newly_unlocked: boolean; chapters_unlocked: number } | null> {
+  if (!userId || userId === "local-user") return null;
   try {
+    // 1. Award XP via server route
     await fetch("/api/xp/award", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, amount: xp, reason: "boss_kill" }),
     });
   } catch (e) {
-    console.error("[bossService] awardRaidReward error:", e);
+    console.error("[bossService] awardRaidReward xp error:", e);
+  }
+  try {
+    // 2. Award extraction token + chapter unlock via boss/complete route
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (!token) return null;
+    const res = await fetch("/api/boss/complete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return {
+      chapter_newly_unlocked: json.chapter_newly_unlocked ?? false,
+      chapters_unlocked: json.chapters_unlocked ?? 1,
+    };
+  } catch (e) {
+    console.error("[bossService] awardRaidReward boss/complete error:", e);
+    return null;
   }
 }
 

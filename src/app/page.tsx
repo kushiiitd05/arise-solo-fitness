@@ -130,6 +130,13 @@ export default function Home() {
               // No shadows — ensure state.shadows is cleared
               dispatch({ type: "SET_DATA", payload: { shadows: [] } });
             }
+            // Map chapters_unlocked counter from DB into GameState.chapters[]
+            const chaptersUnlocked = (dbData.user as any).chapters_unlocked ?? 1;
+            const mappedChapters = initialState.chapters.map((ch: any, idx: number) => ({
+              ...ch,
+              unlocked: idx < chaptersUnlocked,
+            }));
+            dispatch({ type: "SET_DATA", payload: { chapters: mappedChapters } });
             const questsResult = await getDailyQuests(session.user.id);
             if (questsResult?.quests?.length) {
               dispatch({ type: "SET_DAILY_QUESTS", payload: questsResult.quests });
@@ -203,6 +210,13 @@ export default function Home() {
             dispatch({ type: "SET_USER", payload: { ...signInBase, stats: signInFinalStats } });
             dispatch({ type: "SET_DATA", payload: { shadows: signInShadowIds } });
           }
+          // Map chapters_unlocked counter from DB into GameState.chapters[]
+          const signInChaptersUnlocked = (dbData.user as any).chapters_unlocked ?? 1;
+          const signInMappedChapters = initialState.chapters.map((ch: any, idx: number) => ({
+            ...ch,
+            unlocked: idx < signInChaptersUnlocked,
+          }));
+          dispatch({ type: "SET_DATA", payload: { chapters: signInMappedChapters } });
           const signInQuests = await getDailyQuests(session.user.id);
           if (signInQuests?.quests?.length) {
             dispatch({ type: "SET_DAILY_QUESTS", payload: signInQuests.quests });
