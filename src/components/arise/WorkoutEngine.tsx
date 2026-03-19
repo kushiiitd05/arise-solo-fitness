@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Camera, CameraOff, Zap, CheckCircle2, X, Loader2, BookOpen, RefreshCw, Target, Eye } from "lucide-react";
+import { Play, Pause, Camera, CameraOff, Zap, CheckCircle2, X, Loader2, RefreshCw, Target, Eye } from "lucide-react";
 import { COLORS } from "@/lib/constants";
 import { GameState, calculateIntensityRank } from "@/lib/gameReducer";
 import { awardXp, logWorkout } from "@/lib/services/xpService";
 import { PostureGuard, EXERCISE_DB, Landmark } from "@/lib/vision/repCounter";
 import { FilesetResolver, PoseLandmarker } from "@mediapipe/tasks-vision";
 import { systemAudio } from "@/lib/audio";
-import { getNextLockedChapter, unlockNextChapter, getChapterUrl } from "@/lib/services/chapterService";
 import { generateAIOmission, getDifficultyMultiplier, Exercise } from "@/lib/services/exerciseService";
 import { getDailyQuests } from "@/lib/services/questService";
 import { supabase } from "@/lib/supabase";
@@ -44,8 +43,6 @@ export default function WorkoutEngine({ state, dispatch, onClose }: WorkoutEngin
   const [syncing, setSyncing] = useState(false);
   const [arLoading, setArLoading] = useState(false);
   const [loadingMissions, setLoadingMissions] = useState(true);
-  const [unlockedChapter, setUnlockedChapter] = useState<{ number: number; url: string } | null>(null);
-  
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
@@ -214,22 +211,6 @@ export default function WorkoutEngine({ state, dispatch, onClose }: WorkoutEngin
         xpEarned: earned,
         arVerified: arEnabled
       });
-
-      if (rankStr === "S" || rankStr === "A") {
-        const chapterToUnlock = (result?.newLevel || userLevel) - 1;
-        const unlockResult = await unlockNextChapter(state.user.id, chapterToUnlock);
-        
-        if (unlockResult && !(unlockResult as any).alreadyUnlocked) {
-          const url = getChapterUrl(chapterToUnlock);
-          setUnlockedChapter({ number: chapterToUnlock, url });
-          dispatch({ type: "UNLOCK_CHAPTER", payload: chapterToUnlock.toString() });
-          dispatch({
-            type: "ADD_NOTIFICATION",
-            payload: { type: "CHAPTER", title: "STORY SYNCHRONIZED", body: `Chapter ${chapterToUnlock} is now accessible.`, icon: "📖" }
-          });
-          systemAudio?.playSuccess();
-        }
-      }
 
       dispatch({ type: "COMPLETE_WORKOUT", payload: { xpEarned: earned, exerciseName: selectedExercise.name, reps, flawlessReps, intensityRank: rankStr } });
     } catch (err) {
@@ -425,19 +406,6 @@ export default function WorkoutEngine({ state, dispatch, onClose }: WorkoutEngin
               <h2 className="font-orbitron font-black text-2xl text-primary mb-1 tracking-tighter uppercase">MISSION CLEARED</h2>
               <div className="text-[10px] font-mono text-purple-400 mb-6 font-bold tracking-[0.2em]">INTENSITY RANK: [{intensityRankStr}]</div>
               
-              {unlockedChapter && (
-                <motion.a href={unlockedChapter.url} target="_blank" rel="noopener noreferrer" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mb-6 p-4 glass bg-secondary/10 border border-secondary/40 rounded-2xl flex items-center gap-4 group hover:bg-secondary/20 transition-all cursor-pointer">
-                  <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center border border-secondary/30">
-                     <BookOpen className="text-secondary" size={24} />
-                  </div>
-                  <div className="text-left flex-1">
-                     <div className="text-[8px] font-mono text-secondary uppercase tracking-[0.3em] font-black mb-1">STORY ARCHIVE UNLOCKED</div>
-                     <div className="text-xs font-orbitron font-black text-foreground uppercase tracking-tight">SOLO LEVELING: CH {unlockedChapter.number}</div>
-                  </div>
-                  <Zap size={16} className="text-secondary group-hover:scale-110 transition-transform" />
-                </motion.a>
-              )}
-
               <div className="grid grid-cols-3 gap-3 mb-8">
                 {[ { label: "Reps", value: reps }, { label: "Flawless", value: flawlessReps }, { label: "Reward", value: `+${xpEarned} XP` } ].map(stat => (
                   <div key={stat.label} className="p-4 glass rounded-2xl border border-white/5 bg-white/[0.02]">
