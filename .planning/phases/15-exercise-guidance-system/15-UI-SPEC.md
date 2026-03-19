@@ -5,6 +5,7 @@ status: draft
 shadcn_initialized: false
 preset: none
 created: 2026-03-19
+revised: 2026-03-19
 ---
 
 # Phase 15 — UI Design Contract
@@ -58,15 +59,17 @@ Source: WorkoutEngine.tsx patterns (py-5 = 20px, p-5 = 20px) confirmed against 4
 |------|------|--------|-------------|------|-------|
 | Body | 16px | 400 (regular) | 1.5 | Exo 2 | Guide step text, breathing cues, mistake copy |
 | Label | 11px | 700 (bold) | 1.4 | Share Tech Mono | Section headers (STEPS, MISTAKES, BREATHING), system labels |
-| Heading | 20px | 900 (black) | 1.2 | Orbitron | Modal title ("EXERCISE GUIDE"), exercise name in modal header |
-| Display | 10px | 700 (bold) | 1.3 | Share Tech Mono | Upcase tracking labels: "THE SYSTEM TIP:", state badges ("VISUAL GUIDE UNLOCKED") |
+| Heading | 20px | 700 (bold) | 1.2 | Orbitron | Modal title ("EXERCISE GUIDE"), exercise name in modal header |
+| Display | 11px | 700 (bold) | 1.3 | Share Tech Mono | Upcase tracking labels: "THE SYSTEM TIP:", state badges ("VISUAL GUIDE UNLOCKED") |
 
 Typography rules:
-- Orbitron headings: `uppercase tracking-widest` (letter-spacing: 0.25em — matches globals.css)
+- Orbitron headings: `uppercase tracking-widest` (letter-spacing: 0.25em — matches globals.css). Visual dominance is achieved through font family + uppercase + tracking, not weight.
 - Share Tech Mono labels: `uppercase tracking-[0.4em] text-[11px]` — matches WorkoutEngine label pattern
 - Body text (steps, mistakes): `font-exo text-base leading-relaxed text-[--text-primary]`
 - "HUNTER WARNING:" prefix on mistakes: `font-mono text-[11px] text-red-400 uppercase tracking-[0.2em]`
 - Closing THE SYSTEM tip: `font-mono text-[11px] italic text-[--text-system]` (cyan)
+
+Weight contract: Body = 400, all other contexts (Label, Heading, Display) = 700. Two weights only.
 
 Source: WorkoutEngine.tsx, BossEvent.tsx established patterns.
 
@@ -154,7 +157,8 @@ Add "?" guide button in top-right corner of each exercise card.
 - Icon: `HelpCircle` from lucide-react (size={14})
 - Color: `text-cyan-400` / `#38BDF8` at 60% opacity, hover 100%
 - Position: `absolute top-2 right-2` within existing relative card container
-- No label — icon only on exercise card (space-constrained)
+- No visible label — icon only on exercise card (space-constrained)
+- Accessibility: `aria-label="View Exercise Guide"` on the button element (required — hover tooltip is not reachable on mobile touch devices)
 - Does NOT stop event propagation — tapping card still selects exercise; guide button opens modal only
 
 ---
@@ -178,12 +182,12 @@ Add "?" guide button in top-right corner of each exercise card.
 - Active state (clicking while enabled): `active:scale-95` transition 150ms
 - On click: button enters loading state immediately (optimistic), mana deducted via API, Pollinations.ai image fetched
 - Success: image enters via `initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}` — duration 400ms ease-out
-- Button becomes "VISUAL GUIDANCE ACQUIRED" badge: `bg-cyan-900/30 border border-cyan-500/30 text-cyan-400 text-[10px] font-mono uppercase tracking-[0.3em]`
+- Button becomes "VISUAL GUIDANCE ACQUIRED" badge: `bg-cyan-900/30 border border-cyan-500/30 text-cyan-400 text-[11px] font-mono uppercase tracking-[0.3em]`
 
 ### Insufficient mana (shake)
 - Shake animation: `keyframes: { 0%: translateX(0), 20%: translateX(-4px), 40%: translateX(4px), 60%: translateX(-4px), 80%: translateX(4px), 100%: translateX(0) }` — 300ms
 - Implemented via Framer Motion `animate` with conditional trigger on click
-- Tooltip: absolute positioned above button — `text-[10px] font-mono text-red-400 bg-black/80 px-2 py-1 rounded border border-red-500/30`
+- Tooltip: absolute positioned above button — `text-[11px] font-mono text-red-400 bg-black/80 px-2 py-1 rounded border border-red-500/30`
 
 ### Close modal
 - X button top-right: `text-muted-foreground hover:text-white transition-colors p-2` — matches WorkoutEngine close button pattern exactly
