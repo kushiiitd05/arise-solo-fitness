@@ -7,6 +7,9 @@ import { GameState } from "@/lib/gameReducer";
 import { RANK_COLORS, RANK_LABELS } from "@/lib/constants";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { generateArenaOpponent } from '@/lib/ai/prompts/arenaPrompt';
+import { aiCache } from '@/lib/ai/sessionCache';
+import { TypingText } from '@/components/system/TypingText';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -71,24 +74,58 @@ export default function Arena({ state, dispatch, onClose }: ArenaProps) {
     created_at: string;
   }>>([]);
 
+  const [opponentTaunt, setOpponentTaunt] = useState<string | null>(null);
+  const [battleStartedAt, setBattleStartedAt] = useState<number | null>(null);
+
   const pvpRating = state.stats?.pvpRating || 1200;
   const pvpWins   = state.stats?.pvpWins   || 0;
   const pvpLosses = state.stats?.pvpLosses || 0;
   const totalBattles = pvpWins + pvpLosses;
   const winRate = totalBattles > 0 ? Math.round((pvpWins / totalBattles) * 100) : 0;
 
-  // Simulate opponent search
+  // Opponent search — races AI generation against 2500ms fallback timer
   useEffect(() => {
     if (matchStatus !== "searching") return;
-    const t = setTimeout(() => {
-      const name   = OPPONENT_NAMES[Math.floor(Math.random() * OPPONENT_NAMES.length)];
-      const rank   = OPPONENT_RANKS[Math.floor(Math.random() * OPPONENT_RANKS.length)];
-      const rating = Math.floor(Math.random() * 500) + 950;
-      setOpponent({ name, rank, rating });
+
+    const rank   = OPPONENT_RANKS[Math.floor(Math.random() * OPPONENT_RANKS.length)];
+    const rating = Math.floor(Math.random() * 500) + 950;
+    const startedAt = Date.now();
+    setBattleStartedAt(startedAt);
+
+    const cacheKey = `arena:${startedAt}`;
+
+    // Race: AI generation vs 2500ms fallback timer
+    // Whichever resolves first sets the opponent name
+    let settled = false;
+
+    const fallbackTimer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      // Fallback: use OPPONENT_NAMES array (keep unchanged for reliability)
+      const fallbackName = OPPONENT_NAMES[Math.floor(Math.random() * OPPONENT_NAMES.length)];
+      setOpponent({ name: fallbackName, rank, rating });
+      setOpponentTaunt(null);
       setMatchStatus("found");
     }, 2500);
-    return () => clearTimeout(t);
-  }, [matchStatus]);
+
+    generateArenaOpponent(state.user.rank ?? 'E').then((aiOpponent) => {
+      if (settled) return; // fallback already fired — discard late AI response
+      if (aiOpponent) {
+        settled = true;
+        clearTimeout(fallbackTimer);
+        aiCache.set(cacheKey, JSON.stringify(aiOpponent));
+        setOpponent({ name: aiOpponent.name, rank, rating });
+        setOpponentTaunt(aiOpponent.taunt);
+        setMatchStatus("found");
+      }
+      // null = AI failed but fallbackTimer is still running — let it fire naturally
+    });
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      settled = true; // prevent state updates after unmount
+    };
+  }, [matchStatus]); // state.user.rank intentionally omitted — rank stable within a session
 
   // Fetch battle history when HISTORY tab is activated
   useEffect(() => {
@@ -357,6 +394,13 @@ export default function Arena({ state, dispatch, onClose }: ArenaProps) {
                     <p className="text-center text-[10px] font-share-tech-mono text-slate-500 mt-4 tracking-widest">
                       Exercise: <span className="text-white">{selectedExercise}</span>
                     </p>
+
+                    {/* AI opponent taunt — additive, renders only when Ollama provided a taunt */}
+                    {opponentTaunt && matchStatus === "found" && (
+                      <p className="text-[10px] font-mono text-amber-400/80 italic mt-2 text-center">
+                        <TypingText text={`"${opponentTaunt}"`} speedMs={20} />
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex gap-3">
