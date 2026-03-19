@@ -26,6 +26,7 @@ import GuildHall from "./GuildHall";
 import AchievementHall from "./AchievementHall";
 import RankTrialEngine from "./RankTrialEngine";
 import RankUpCeremony from "./RankUpCeremony";
+import ChapterUnlockCeremony from "./ChapterUnlockCeremony";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { systemAudio } from "@/lib/audio";
@@ -51,6 +52,10 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
   const [showRankUp, setShowRankUp] = useState(false);
   const [rankUpResult, setRankUpResult] = useState<{
     oldRank: string; newRank: string; xpBonus: number; statPoints: number;
+  } | null>(null);
+  const [showChapterUnlock, setShowChapterUnlock] = useState(false);
+  const [chapterUnlockData, setChapterUnlockData] = useState<{
+    title: string; number: number; externalUrl: string | null;
   } | null>(null);
 
   const { user, stats, dailyQuests, chapters, shadows } = state;
@@ -90,6 +95,30 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
     };
     fetchTokens();
   }, [user.id]);
+
+  const handleChapterUnlocked = (newCount: number) => {
+    // newCount is 1-based total unlocked; index of newly unlocked chapter is newCount - 1
+    const newlyUnlocked = state.chapters?.[newCount - 1];
+    if (!newlyUnlocked) return;
+    // Valid URLs: only comix.to links (not webtoons list page)
+    const validUrl = newlyUnlocked.externalUrl?.includes("comix.to")
+      ? newlyUnlocked.externalUrl
+      : null;
+    setChapterUnlockData({
+      title: newlyUnlocked.title,
+      number: newCount,
+      externalUrl: validUrl,
+    });
+    setShowChapterUnlock(true);
+    // Update chapters[] in state to reflect new unlocked count
+    const mappedChapters = state.chapters?.map((ch: any, idx: number) => ({
+      ...ch,
+      unlocked: idx < newCount,
+    }));
+    if (mappedChapters) {
+      dispatch({ type: "SET_DATA", payload: { chapters: mappedChapters } });
+    }
+  };
 
   const RANK_D_LEVEL = 10;
   const rankDProgress = Math.min(100, Math.round(((user.level - 1) / (RANK_D_LEVEL - 1)) * 100));
@@ -324,19 +353,46 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                             ))}
                          </div>
                       </div>
-                      <BossEvent state={state} dispatch={dispatch} />
+                      <BossEvent state={state} dispatch={dispatch} onChapterUnlocked={handleChapterUnlocked} />
                    </div>
                    <div className="space-y-12">
                       <div className="system-panel p-10 border-[#06B6D4]/30 bg-[#030308]/60 backdrop-blur-3xl shadow-2xl">
                          <h2 className="text-[12px] font-black text-[#06B6D4] mb-10 system-readout tracking-[0.5em] uppercase italic">SYSTEM_LOGS</h2>
                          <div className="space-y-5">
                             {chapters?.slice(0, 5).map((ch: any) => (
-                              <div key={ch.id} className={cn("p-5 rounded-2xl border flex items-center justify-between transition-all", ch.unlocked ? "border-white/10 bg-white/[0.03] hover:bg-white/[0.06] cursor-pointer" : "border-white/5 opacity-20 grayscale")}>
+                              <div
+                                key={ch.id}
+                                onClick={() => {
+                                  if (!ch.unlocked) return;
+                                  const validUrl = ch.externalUrl?.includes("comix.to") ? ch.externalUrl : null;
+                                  if (validUrl) {
+                                    window.open(validUrl, "_blank");
+                                  } else {
+                                    dispatch({
+                                      type: "ADD_NOTIFICATION",
+                                      payload: {
+                                        type: "INFO",
+                                        title: "SOURCE NOT YET AVAILABLE",
+                                        body: "This chapter has been unlocked but the source URL is not confirmed. Check back soon.",
+                                        icon: "📖",
+                                      },
+                                    });
+                                  }
+                                }}
+                                className={cn(
+                                  "p-5 rounded-2xl border flex items-center justify-between transition-all",
+                                  ch.unlocked
+                                    ? "border-white/10 bg-white/[0.03] hover:bg-white/[0.06] cursor-pointer"
+                                    : "border-white/5 opacity-20 grayscale pointer-events-none"
+                                )}
+                              >
                                  <div className="flex items-center gap-5">
                                     <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[11px] font-black text-[#94A3B8] border border-white/5 uppercase">{ch.id}</div>
                                     <div>
                                        <div className="system-readout text-[12px] font-black text-white uppercase">{ch.title}</div>
-                                       <div className="system-readout text-[8px] text-[#94A3B8] font-bold uppercase tracking-widest mt-1">VERIFIED_LOG</div>
+                                       <div className="system-readout text-[8px] text-[#94A3B8] font-bold uppercase tracking-widest mt-1">
+                                         {ch.unlocked ? (ch.externalUrl?.includes("comix.to") ? "VERIFIED_LOG" : "SOURCE NOT YET AVAILABLE") : "LOCKED"}
+                                       </div>
                                     </div>
                                  </div>
                                  {ch.unlocked && <Sparkles size={16} className="text-[#06B6D4] drop-shadow-[0_0_8px_#06B6D4]" />}
@@ -573,7 +629,14 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
           />
         )}
         {showQuestBoard && <QuestBoard state={state} dispatch={dispatch} onClose={() => setShowQuestBoard(false)} />}
-        {showWorkout && <WorkoutEngine state={state} dispatch={dispatch} onClose={() => setShowWorkout(false)} />}
+        {showWorkout && (
+          <WorkoutEngine
+            state={state}
+            dispatch={dispatch}
+            onClose={() => setShowWorkout(false)}
+            onChapterUnlocked={handleChapterUnlocked}
+          />
+        )}
         {showTrial && (
           <RankTrialEngine
             state={state}
@@ -599,6 +662,18 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
               // Rank state was already updated by dispatch({ type: "SET_USER" }) inside
               // RankTrialEngine.handleTrialPass when /api/rank/advance responded successfully.
               // No additional SET_USER dispatch needed here.
+            }}
+          />
+        )}
+        {showChapterUnlock && chapterUnlockData && (
+          <ChapterUnlockCeremony
+            chapterTitle={chapterUnlockData.title}
+            chapterNumber={chapterUnlockData.number}
+            externalUrl={chapterUnlockData.externalUrl}
+            dispatch={dispatch}
+            onDismiss={() => {
+              setShowChapterUnlock(false);
+              setChapterUnlockData(null);
             }}
           />
         )}
