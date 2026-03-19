@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 13-01-PLAN.md
-last_updated: "2026-03-19T07:44:57.196Z"
+stopped_at: Completed 13-02-PLAN.md
+last_updated: "2026-03-19T07:51:34.264Z"
 progress:
   total_phases: 14
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 33
-  completed_plans: 30
+  completed_plans: 31
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 13
 
 ## Current Plan
-13-01 complete
+13-02 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -53,6 +53,8 @@ in-progress
 - 11-03: Arena.tsx wired to real battle API — performing/resolving/result states, reps input, outcome card, live history fetch, MOCK_HISTORY removed (2026-03-19)
 - 12-01: chapters_unlocked DB migration + 11 pure-logic vitest scaffolds (CH-01/CH-02/CH-03) + CHAPTER notify duration 6500ms (2026-03-19)
 - 12-02: chapters_unlocked read-then-write wired into boss/complete and quests/update routes + WorkoutEngine rank-based unlock removed (2026-03-19)
+- 13-01: ollamaClient + sessionCache + 4 prompt functions (bossPrompt, questPrompt, workoutPrompt, arenaPrompt) + TypingText component (2026-03-19)
+- 13-02: 4 AI surfaces wired — BossEvent blurb, QuestBoard lore (staggered), WorkoutEngine tagline (sequenced), Arena opponent (Promise.race) (2026-03-19)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -131,6 +133,9 @@ in-progress
 - [Phase 13-ollama-ai-integration]: OLLAMA_MODEL reads NEXT_PUBLIC_OLLAMA_MODEL env var, falls back to 'llama3' — single source of truth in ollamaClient.ts
 - [Phase 13-ollama-ai-integration]: format:'json' is opt-in — only arenaPrompt passes it; plain text surfaces omit to avoid Ollama wrapping responses
 - [Phase 13-ollama-ai-integration]: aiCache lives at module level not useState — session-scoped, resets on page reload, no persistence needed
+- [Phase 13]: Arena useEffect dep [matchStatus] not [matchStatus, state.user.rank] — rank stable within session, prevents extra re-fire
+- [Phase 13]: settled flag in Arena.tsx prevents double state-set when AI promise and fallbackTimer could theoretically fire simultaneously
+- [Phase 13]: QuestBoard stagger 300ms per quest addresses Ollama single-request queue overload (RESEARCH.md pitfall)
 
 ## Blockers
 - None
@@ -140,5 +145,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Completed 13-01-PLAN.md
+Stopped at: Completed 13-02-PLAN.md
 Date: 2026-03-19T05:42:30Z
