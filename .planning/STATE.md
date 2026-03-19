@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 12 context gathered
-last_updated: "2026-03-18T22:46:00.696Z"
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-03-19T05:32:57.074Z"
 progress:
   total_phases: 14
   completed_phases: 10
-  total_plans: 28
-  completed_plans: 26
+  total_plans: 31
+  completed_plans: 27
 ---
 
 # GSD State
@@ -18,10 +18,10 @@ progress:
 in-progress
 
 ## Current Phase
-11
+12
 
 ## Current Plan
-11-03 complete (checkpoint: human-verify approved)
+12-01 complete
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -51,6 +51,7 @@ in-progress
 - 11-01: battleEngine pure combat module (computeCPI/computeWinProbability/rollOutcome/computePerfMod/XP_BY_RANK/generateOpponentStats) + arena_battles DB migration (2026-03-18)
 - 11-02: POST /api/arena/battle (battle computation, ELO rating, persistence, XP chain) + GET /api/arena/history (last 20 battles) (2026-03-18)
 - 11-03: Arena.tsx wired to real battle API — performing/resolving/result states, reps input, outcome card, live history fetch, MOCK_HISTORY removed (2026-03-19)
+- 12-01: chapters_unlocked DB migration + 11 pure-logic vitest scaffolds (CH-01/CH-02/CH-03) + CHAPTER notify duration 6500ms (2026-03-19)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -121,6 +122,7 @@ in-progress
 - [Phase 11-03]: pvpWins/pvpLosses not dispatched after battle — API does not return them; only newRating available for immediate SET_DATA update
 - [Phase 11-03]: battleHistory.length === 0 guard for empty state — not totalBattles (server counts may lag until next session)
 - [Phase 11-03]: Error fallback in handleBattleSubmit: setMatchStatus("found") lets player retry if API fails without losing matched opponent
+- [Phase 12-manhwa-chapter-reward-system]: chapters_unlocked uses INTEGER count with DEFAULT 1 — index-based mapping ensures existing users get Chapter 1 without backfill, Wave 0 tests use pure inline logic not route imports
 
 ## Blockers
 - None
@@ -130,5 +132,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 5 phases defined. Start with Phase 1 (Foundation Fixes).
 
 ## Last Session
-Stopped at: Phase 12 context gathered
+Stopped at: Completed 12-01-PLAN.md
 Date: 2026-03-19T01:00:00Z
