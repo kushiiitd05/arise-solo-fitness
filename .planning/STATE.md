@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: "Checkpoint: Task 2 visual verification in 15-03-PLAN.md"
-last_updated: "2026-03-19T11:10:22.606Z"
+stopped_at: Completed 15-03-PLAN.md — phase 15 complete
+last_updated: "2026-03-19T11:22:06.202Z"
 progress:
   total_phases: 15
   completed_phases: 13
   total_plans: 36
-  completed_plans: 34
+  completed_plans: 35
 ---
 
 # GSD State
@@ -21,7 +21,7 @@ in-progress
 15
 
 ## Current Plan
-15-02 complete
+15-03 complete (phase 15 fully done)
 
 ## Completed Plans
 - 01-01: API route safety fixes — maybeSingle and Bearer-only auth (2026-03-15)
@@ -57,6 +57,7 @@ in-progress
 - 13-02: 4 AI surfaces wired — BossEvent blurb, QuestBoard lore (staggered), WorkoutEngine tagline (sequenced), Arena opponent (Promise.race) (2026-03-19)
 - 15-01: exercise_guides + user_exercise_images migration + mana_spent column + GET /api/exercise-guide (3-layer cache) + POST /api/exercise-guide/visual-unlock (mana gate, idempotency) + 10 vitest tests EG-01 through EG-06 (2026-03-19)
 - 15-02: ExerciseGuideModal component — 5 visual states (loading skeleton, text-only guide, visual pending, visual unlocked, mana-insufficient shake), all Framer Motion animations, mana gating, self-contained API calls (2026-03-19)
+- 15-03: HelpCircle guide button wired into WorkoutEngine exercise cards + ExerciseGuideModal integration with USE_MANA dispatch; visual verification approved (2026-03-19)
 
 ## Decisions
 - Fix root causes in sequence (phases 1-5), no new features until Phase 1 is complete
@@ -160,5 +161,5 @@ Audit completed 2026-03-15. Full bug list in SYSTEM_HEALTH_REPORT section of ses
 - Phase 15 added: Exercise Guidance System — AI-powered step-by-step exercise instructions via Ollama with text-only and visual (image generation) modes. Guides cached per exercise and reused across users.
 
 ## Last Session
-Stopped at: Checkpoint: Task 2 visual verification in 15-03-PLAN.md
+Stopped at: Completed 15-03-PLAN.md — phase 15 complete
 Date: 2026-03-19T11:07:30Z
