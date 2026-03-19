@@ -10,6 +10,9 @@ import { systemAudio } from "@/lib/audio";
 import { generateAIOmission, getDifficultyMultiplier, Exercise } from "@/lib/services/exerciseService";
 import { getDailyQuests } from "@/lib/services/questService";
 import { supabase } from "@/lib/supabase";
+import { generateWorkoutTagline } from '@/lib/ai/prompts/workoutPrompt';
+import { aiCache } from '@/lib/ai/sessionCache';
+import { TypingText } from '@/components/system/TypingText';
 
 interface WorkoutEngineProps {
   state: GameState;
@@ -44,6 +47,7 @@ export default function WorkoutEngine({ state, dispatch, onClose, onChapterUnloc
   const [syncing, setSyncing] = useState(false);
   const [arLoading, setArLoading] = useState(false);
   const [loadingMissions, setLoadingMissions] = useState(true);
+  const [workoutTagline, setWorkoutTagline] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const landmarkerRef = useRef<PoseLandmarker | null>(null);
@@ -59,6 +63,22 @@ export default function WorkoutEngine({ state, dispatch, onClose, onChapterUnloc
     };
     fetchMissions();
   }, [userRank, jobClass]);
+
+  // AI workout tagline — fires after missions finish loading to avoid simultaneous Ollama requests
+  useEffect(() => {
+    if (loadingMissions) return;
+    const cacheKey = 'workout';
+    if (aiCache.has(cacheKey)) {
+      setWorkoutTagline(aiCache.get(cacheKey));
+      return;
+    }
+    generateWorkoutTagline(jobClass ?? 'Fighter').then((tagline) => {
+      if (tagline) {
+        aiCache.set(cacheKey, tagline);
+        setWorkoutTagline(tagline);
+      }
+    });
+  }, [loadingMissions]); // fires once when loadingMissions flips to false
 
   useEffect(() => {
     if (isRunning) {
@@ -305,6 +325,13 @@ export default function WorkoutEngine({ state, dispatch, onClose, onChapterUnloc
                 </div>
                 <div className="text-[10px] font-orbitron text-cyan-400">MP: {mp}</div>
               </div>
+
+              {/* AI challenge tagline — additive, shows below the select-phase header */}
+              {workoutTagline && !loadingMissions && (
+                <div className="mb-4 text-[10px] font-mono text-primary/70 italic text-center px-4">
+                  <TypingText text={workoutTagline} speedMs={28} />
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-3 mb-6">
                 {!loadingMissions && exercises.map(ex => (
