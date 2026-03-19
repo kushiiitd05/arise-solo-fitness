@@ -169,3 +169,14 @@ Plans:
 Plans:
 - [ ] 14-01: Error boundaries + loading state audit across all panels
 - [ ] 14-02: RLS policy verification + full auth flow E2E test
+
+### Phase 15: Exercise Guidance System
+**Goal**: AI-powered per-exercise modal with step-by-step Ollama instructions (text-only default), mana-gated visual mode via Pollinations.ai, DB-cached guides shared across users
+**Requirements**: EG-01, EG-02, EG-03, EG-04, EG-05, EG-06
+**Depends on**: Phase 14
+**Plans**: 3 plans
+
+Plans:
+- [ ] 15-01-PLAN.md — DB migration (exercise_guides, user_exercise_images, mana_spent), Wave 0 vitest scaffolds, GET /api/exercise-guide (aiCache→DB→Ollama), POST /api/exercise-guide/visual-unlock (mana gate, idempotency, Pollinations URL)
+- [ ] 15-02-PLAN.md — ExerciseGuideModal component (5 states: loading skeleton, text-only, visual pending, visual unlocked, mana-insufficient shake), all Framer Motion animations
+- [ ] 15-03-PLAN.md — WorkoutEngine integration: HelpCircle guide button per exercise card, ExerciseGuideModal render, USE_MANA dispatch on unlock
