@@ -1,11 +1,14 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Clock, ShieldAlert, Award, X, ChevronRight, Zap, Lock } from "lucide-react";
 import { GameState } from "@/lib/gameReducer";
 import { getDailyQuests } from "@/lib/services/questService";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { generateQuestLore } from '@/lib/ai/prompts/questPrompt';
+import { aiCache } from '@/lib/ai/sessionCache';
+import { TypingText } from '@/components/system/TypingText';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -22,6 +25,7 @@ export default function QuestBoard({ state, dispatch, onClose }: QuestBoardProps
   const [dailyQuests, setDailyQuests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [questLores, setQuestLores] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchQuests = async () => {
@@ -40,6 +44,37 @@ export default function QuestBoard({ state, dispatch, onClose }: QuestBoardProps
     };
     fetchQuests();
   }, [state.user.id]);
+
+  // Lazy per-quest AI lore generator — stable callback, skips completed and already-cached quests
+  const generateLoreForQuest = useCallback((quest: any) => {
+    if (quest.completed) return;
+    if (questLores[quest.id]) return;
+    const cacheKey = `quest:${quest.id}`;
+    if (aiCache.has(cacheKey)) {
+      setQuestLores(prev => ({ ...prev, [quest.id]: aiCache.get(cacheKey)! }));
+      return;
+    }
+    generateQuestLore(
+      quest.name,
+      quest.difficulty ?? 'NORMAL',
+      state.user.jobClass ?? 'Fighter'
+    ).then((lore) => {
+      if (lore) {
+        aiCache.set(cacheKey, lore);
+        setQuestLores(prev => ({ ...prev, [quest.id]: lore }));
+      }
+    });
+  }, [questLores, state.user.jobClass]);
+
+  // Stagger quest lore generation 300ms apart to avoid overloading Ollama
+  useEffect(() => {
+    if (dailyQuests.length === 0) return;
+    dailyQuests
+      .filter(q => !q.completed)
+      .forEach((quest, idx) => {
+        setTimeout(() => generateLoreForQuest(quest), idx * 300);
+      });
+  }, [dailyQuests]); // generateLoreForQuest intentionally omitted — stable enough for this effect
 
   const allCompleted = dailyQuests.length > 0 && dailyQuests.every(q => q.completed);
 
@@ -165,7 +200,14 @@ export default function QuestBoard({ state, dispatch, onClose }: QuestBoardProps
                                    <span className="text-[10px] font-system text-[#A855F7] font-black">+{quest.xp_reward || quest.xp || 0} XP</span>
                                 </div>
                               </div>
-                              
+
+                              {/* AI lore text — additive, renders below quest name when Ollama responds */}
+                              {questLores[quest.id] && (
+                                <p className="text-[9px] font-mono text-[#7C3AED]/70 italic mt-1 mb-2 leading-relaxed">
+                                  <TypingText text={questLores[quest.id]} speedMs={18} />
+                                </p>
+                              )}
+
                               <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden mb-2">
                                 <motion.div 
                                   initial={{ width: 0 }}
