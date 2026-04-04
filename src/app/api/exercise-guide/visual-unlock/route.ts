@@ -36,26 +36,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ imageUrl: existing.image_url, alreadyUnlocked: true });
   }
 
-  // Fetch user stats to compute available mana
-  const { data: userStats } = await supabaseServer
-    .from("user_stats")
-    .select("intelligence, level, mana_spent")
-    .eq("user_id", userId)
-    .maybeSingle();
+  // Fetch user stats and level to compute available mana
+  const [statsResult, userResult] = await Promise.all([
+    supabaseServer.from("user_stats").select("intelligence").eq("user_id", userId).maybeSingle(),
+    supabaseServer.from("users").select("level").eq("id", userId).maybeSingle(),
+  ]);
 
-  if (!userStats) {
+  if (!statsResult.data || !userResult.data) {
     return NextResponse.json({ error: "User stats not found" }, { status: 404 });
   }
 
-  const availableMana = (userStats.intelligence * userStats.level) - (userStats.mana_spent ?? 0);
+  const userStats = statsResult.data as { intelligence: number };
+  const userRow = userResult.data as { level: number };
+
+  // Read mana_spent separately — column may not exist if migration hasn't run
+  const manaResult = await supabaseServer
+    .from("user_stats")
+    .select("mana_spent")
+    .eq("user_id", userId)
+    .maybeSingle();
+  const manaSpent: number = (manaResult.data as any)?.mana_spent ?? 0;
+
+  const availableMana = (userStats.intelligence * userRow.level) - manaSpent;
   if (availableMana < MANA_COST) {
     return NextResponse.json({ error: "Insufficient mana", available: availableMana }, { status: 402 });
   }
 
-  // Deduct mana
+  // Deduct mana (best-effort — column may not exist until migration runs)
   await supabaseServer
     .from("user_stats")
-    .update({ mana_spent: (userStats.mana_spent ?? 0) + MANA_COST })
+    .update({ mana_spent: manaSpent + MANA_COST })
     .eq("user_id", userId);
 
   // Construct Pollinations.ai URL (URL is the image — no additional fetch needed)
@@ -69,6 +79,6 @@ export async function POST(req: NextRequest) {
     image_url: imageUrl,
   });
 
-  const manaRemaining = availableMana - MANA_COST;
+  const manaRemaining = Math.max(0, availableMana - MANA_COST);
   return NextResponse.json({ imageUrl, manaRemaining });
 }

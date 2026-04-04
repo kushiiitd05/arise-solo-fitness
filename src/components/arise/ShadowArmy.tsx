@@ -200,14 +200,14 @@ export default function ShadowArmy({
                           onClick={() => { systemAudio?.playClick(); setSelectedShadow(ps); }}
                           className={cn(
                             "system-panel p-6 border transition-all group relative overflow-hidden cursor-pointer",
-                            isSelected ? "border-[#7C3AED] bg-[#7C3AED]/10 shadow-[0_0_20px_rgba(124,58,237,0.3)]" : "border-white/5 bg-[#030308]/40 hover:border-white/20"
+                            isSelected ? "border-[#7C3AED] bg-[#7C3AED]/10 shadow-[0_0_20px_rgba(124,58,237,0.3)]" : "border-[#7C3AED]/10 bg-[#030308]/40 hover:border-[#7C3AED]/40 hover:bg-[#030308]/80 hover:shadow-[0_0_30px_rgba(124,58,237,0.15),inset_0_0_20px_rgba(124,58,237,0.03)]"
                           )}
                         >
                           <div className="absolute top-0 right-0 p-4 opacity-5 text-6xl pointer-events-none group-hover:opacity-10 transition-opacity font-system">
                             {shadow.image}
                           </div>
                           <div className="flex items-center gap-6 mb-6 relative z-10">
-                            <div className="text-6xl filter drop-shadow-[0_0_25px_rgba(124,58,237,0.5)] group-hover:scale-110 transition-transform duration-500">
+                            <div className="text-6xl filter drop-shadow-[0_0_25px_rgba(124,58,237,0.5)] group-hover:drop-shadow-[0_0_40px_rgba(124,58,237,0.9)] group-hover:scale-110 transition-all duration-500">
                               {shadow.image}
                             </div>
                             <div>
@@ -273,8 +273,8 @@ export default function ShadowArmy({
 
                      <div className="flex flex-col items-center mb-10">
                         <div className="w-40 h-40 relative flex items-center justify-center group">
-                           <div className="absolute inset-0 bg-[#7C3AED]/5 rounded-full blur-3xl group-hover:bg-[#7C3AED]/15 transition-all" />
-                           <div className="text-9xl filter drop-shadow-[0_0_30px_rgba(124,58,237,0.5)] z-10 scale-110">
+                           <div className="absolute inset-0 bg-[#7C3AED]/10 rounded-full blur-3xl group-hover:bg-[#7C3AED]/25 transition-all duration-700" style={{ animation: 'pulse 3s ease-in-out infinite' }} />
+                           <div className="text-9xl filter drop-shadow-[0_0_50px_rgba(124,58,237,0.8)] group-hover:drop-shadow-[0_0_80px_rgba(124,58,237,1)] z-10 scale-110 transition-all duration-700">
                               {SHADOWS_DB.find(s => s.id === selectedShadow.shadow_id)?.image}
                            </div>
                         </div>

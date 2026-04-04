@@ -303,167 +303,405 @@ export default function WorkoutEngine({ state, dispatch, onClose, onChapterUnloc
   const progress = targetReps > 0 ? Math.min(1, reps / targetReps) : 0;
   const circumference = 2 * Math.PI * 54;
 
+  const rankColorMap: Record<string, string> = {
+    S: "#F59E0B", A: "#EF4444", B: "#8B5CF6", C: "#06B6D4", D: "#10B981", E: "#94A3B8"
+  };
+  const rankColor = rankColorMap[intensityRankStr] || "#06B6D4";
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl font-exo">
-      <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-md glass border border-primary/20 rounded-3xl p-8 shadow-[0_0_50px_rgba(56,189,248,0.2)] relative overflow-hidden">
-        
+      <motion.div
+        initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }}
+        className="w-full relative overflow-hidden"
+        style={{
+          maxWidth: "28rem",
+          background: "rgba(8,5,20,0.95)",
+          border: "1px solid rgba(6,182,212,0.2)",
+          borderRadius: "24px",
+          padding: "32px",
+          boxShadow: "0 0 60px rgba(6,182,212,0.15), 0 30px 60px rgba(0,0,0,0.8), inset 0 0 40px rgba(6,182,212,0.03)",
+        }}
+      >
+        {/* Top accent line */}
+        <div className="absolute top-0 left-8 right-8 h-[1px]" style={{ background: "linear-gradient(to right, transparent, rgba(6,182,212,0.5), transparent)" }} />
+        {/* Corner accents */}
+        <div className="absolute top-0 right-0 w-6 h-6" style={{ borderTop: "2px solid rgba(6,182,212,0.5)", borderRight: "2px solid rgba(6,182,212,0.5)", borderTopRightRadius: "24px" }} />
+        <div className="absolute bottom-0 left-0 w-6 h-6" style={{ borderBottom: "2px solid rgba(124,58,237,0.4)", borderLeft: "2px solid rgba(124,58,237,0.4)", borderBottomLeftRadius: "24px" }} />
+
         <div className="flex items-center justify-between mb-8 relative z-10">
           <div>
-            <div className="text-[10px] font-mono tracking-[0.4em] text-primary/60 uppercase mb-1">SYSTEM RANK: {userRank} CLASS</div>
-            <h2 className="text-xl font-orbitron font-black text-foreground tracking-tighter uppercase">
+            <div className="font-mono text-[9px] tracking-[0.4em] uppercase mb-1" style={{ color: "rgba(6,182,212,0.6)" }}>
+              SYSTEM RANK: {userRank} CLASS
+            </div>
+            <h2 className="text-xl font-orbitron font-black text-white tracking-tight uppercase" style={{ textShadow: "0 0 20px rgba(6,182,212,0.4)" }}>
               {phase === "select" ? "SELECT MISSION" : phase === "active" ? "MISSION IN PROGRESS" : "MISSION SUCCESS"}
             </h2>
           </div>
-          <button onClick={() => { systemAudio?.playClick(); onClose(); }} className="text-muted-foreground hover:text-white transition-colors p-2"><X size={24} /></button>
+          <button
+            onClick={() => { systemAudio?.playClick(); onClose(); }}
+            className="text-slate-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-xl"
+          >
+            <X size={24} />
+          </button>
         </div>
 
         <AnimatePresence mode="wait">
           {phase === "select" && (
             <motion.div key="select" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-              
+
               <div className="flex justify-between items-center mb-4">
-                <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                  <RefreshCw size={12} className={loadingMissions ? "animate-spin" : ""} />
+                <div className="font-mono text-[9px] text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <RefreshCw size={12} className={loadingMissions ? "animate-spin" : ""} style={{ color: loadingMissions ? "#06B6D4" : undefined }} />
                   {loadingMissions ? "Generating AI Recommendations..." : "Available Dungeon Missions"}
                 </div>
-                <div className="text-[10px] font-orbitron text-cyan-400">MP: {mp}</div>
+                <div
+                  className="font-mono text-[10px] font-black px-2 py-0.5 rounded"
+                  style={{ color: "#A855F7", background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.3)" }}
+                >
+                  MP: {mp}
+                </div>
               </div>
 
-              {/* AI challenge tagline — additive, shows below the select-phase header */}
               {workoutTagline && !loadingMissions && (
-                <div className="mb-4 text-[10px] font-mono text-primary/70 italic text-center px-4">
+                <div className="mb-4 font-mono text-[10px] italic text-center px-4" style={{ color: "rgba(6,182,212,0.7)" }}>
                   <TypingText text={workoutTagline} speedMs={28} />
                 </div>
               )}
 
               <div className="grid grid-cols-1 gap-3 mb-6">
-                {!loadingMissions && exercises.map(ex => (
-                  <button 
-                    key={ex.id} 
-                    onClick={() => { systemAudio?.playClick(); setSelectedExercise(ex); }}
-                    className="flex items-center gap-4 p-5 rounded-2xl text-left transition-all relative overflow-hidden group border"
-                    style={{ background: selectedExercise?.id === ex.id ? COLORS.cyan + "15" : "rgba(255,255,255,0.02)", borderColor: selectedExercise?.id === ex.id ? COLORS.cyan + "50" : "rgba(255,255,255,0.05)" }}
-                  >
-                    <span className="text-4xl relative z-10">{ex.icon}</span>
-                    <div className="flex-1 relative z-10">
-                      <div className="font-orbitron font-black text-sm text-foreground tracking-widest uppercase">{ex.name}</div>
-                      <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest">{ex.muscle} · +{ex.xpPerRep} XP BASE</div>
-                    </div>
-                    {selectedExercise?.id === ex.id && <Zap size={18} className="text-secondary animate-pulse relative z-10" />}
-                    {/* Guide button — absolute top-right corner */}
-                    <button
-                      type="button"
-                      aria-label="View Exercise Guide"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        systemAudio?.playClick();
-                        setGuideExercise(ex);
+                {!loadingMissions && exercises.map(ex => {
+                  const isSelected = selectedExercise?.id === ex.id;
+                  return (
+                    <div
+                      key={ex.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => { systemAudio?.playClick(); setSelectedExercise(ex); }}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { systemAudio?.playClick(); setSelectedExercise(ex); } }}
+                      className="flex items-center gap-4 p-4 text-left transition-all relative overflow-hidden group cursor-pointer"
+                      style={{
+                        background: isSelected ? "rgba(6,182,212,0.08)" : "rgba(255,255,255,0.02)",
+                        border: `1px solid ${isSelected ? "rgba(6,182,212,0.5)" : "rgba(255,255,255,0.05)"}`,
+                        borderRadius: "16px",
+                        boxShadow: isSelected ? "0 0 20px rgba(6,182,212,0.15), inset 0 0 15px rgba(6,182,212,0.03)" : "none",
+                        borderLeft: isSelected ? "3px solid #06B6D4" : "1px solid rgba(255,255,255,0.05)",
                       }}
-                      className="absolute top-2 right-2 p-3 text-cyan-400 opacity-60 hover:opacity-100 transition-opacity z-20"
                     >
-                      <HelpCircle size={14} />
-                    </button>
-                  </button>
-                ))}
+                      <span className="text-3xl relative z-10 transition-transform group-hover:scale-110 duration-300">{ex.icon}</span>
+                      <div className="flex-1 relative z-10">
+                        <div
+                          className="font-orbitron font-black text-sm tracking-widest uppercase"
+                          style={{ color: isSelected ? "#06B6D4" : "#E2E8F0", textShadow: isSelected ? "0 0 15px rgba(6,182,212,0.5)" : "none" }}
+                        >
+                          {ex.name}
+                        </div>
+                        <div className="font-mono text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">{ex.muscle} · +{ex.xpPerRep} XP BASE</div>
+                      </div>
+                      {isSelected && <Zap size={16} className="animate-pulse relative z-10" style={{ color: "#06B6D4" }} />}
+                      {/* Hover shimmer */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      {/* Guide button */}
+                      <button
+                        type="button"
+                        aria-label="View Exercise Guide"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          systemAudio?.playClick();
+                          setGuideExercise(ex);
+                        }}
+                        className="absolute top-2 right-2 p-2 opacity-40 hover:opacity-100 transition-opacity z-20 rounded-lg hover:bg-white/5"
+                        style={{ color: "#06B6D4" }}
+                      >
+                        <HelpCircle size={13} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
 
-              <div className="mb-8 p-6 glass bg-primary/5 border border-primary/10 rounded-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><Target size={64} className="text-primary" /></div>
+              {/* Target intensity panel */}
+              <div
+                className="mb-8 p-5 relative overflow-hidden"
+                style={{
+                  background: "rgba(124,58,237,0.05)",
+                  border: "1px solid rgba(124,58,237,0.15)",
+                  borderRadius: "16px",
+                }}
+              >
+                <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none"><Target size={56} style={{ color: "#7C3AED" }} /></div>
                 <div className="flex justify-between items-end mb-4 relative z-10">
-                   <div>
-                     <label className="text-[9px] font-mono text-primary uppercase tracking-[0.2em] block mb-1">Target Intensity</label>
-                     <div className="text-[10px] font-mono text-muted-foreground uppercase">Scaling Factor: x{rankMultiplier.toFixed(1)}</div>
-                   </div>
-                   <span className="text-3xl font-orbitron font-black text-primary tracking-tighter">{targetReps} <span className="text-sm">REPS</span></span>
+                  <div>
+                    <label className="font-mono text-[9px] uppercase tracking-[0.2em] block mb-1" style={{ color: "#7C3AED" }}>Target Intensity</label>
+                    <div className="font-mono text-[10px] text-slate-600 uppercase">Scaling Factor: x{rankMultiplier.toFixed(1)}</div>
+                  </div>
+                  <span className="text-3xl font-orbitron font-black tracking-tighter" style={{ color: "#A855F7", textShadow: "0 0 20px rgba(124,58,237,0.5)" }}>
+                    {targetReps} <span className="text-sm text-slate-500">REPS</span>
+                  </span>
                 </div>
-                <input type="range" min={5} max={200} step={5} value={targetReps} onChange={e => { systemAudio?.playClick(); setTargetReps(+e.target.value); }} className="w-full accent-primary h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer" />
+                <input
+                  type="range" min={5} max={200} step={5} value={targetReps}
+                  onChange={e => { systemAudio?.playClick(); setTargetReps(+e.target.value); }}
+                  className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                  style={{ accentColor: "#7C3AED", background: "rgba(255,255,255,0.08)" }}
+                />
               </div>
 
-              <button onClick={startWorkout} disabled={!selectedExercise} className="w-full py-5 font-orbitron font-black tracking-[0.4em] text-xs rounded-2xl transition-all disabled:opacity-30 shadow-[0_8px_30px_rgba(56,189,248,0.3)] group relative overflow-hidden" style={{ background: COLORS.cyan, color: "#000" }}>
+              {!selectedExercise && (
+                <p className="text-center font-mono text-[9px] tracking-[0.2em] uppercase mb-3 animate-pulse" style={{ color: "rgba(6,182,212,0.6)" }}>
+                  ↑ SELECT A MISSION ABOVE
+                </p>
+              )}
+
+              <button
+                onClick={startWorkout}
+                disabled={!selectedExercise}
+                className="w-full py-5 font-orbitron font-black tracking-[0.4em] text-xs transition-all disabled:opacity-30 relative overflow-hidden group"
+                style={{
+                  background: "linear-gradient(135deg, #06B6D4, #38BDF8)",
+                  color: "#030308",
+                  borderRadius: "16px",
+                  boxShadow: selectedExercise ? "0 8px 30px rgba(6,182,212,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset" : "none",
+                }}
+              >
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <span className="relative z-10 uppercase">[ Initialize Protocol ]</span>
               </button>
             </motion.div>
           )}
 
           {phase === "active" && selectedExercise && (
-             <motion.div key="active" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.1 }} className="text-center relative z-10">
-                {arEnabled && (
-                  <div className="absolute inset-0 -m-8 mb-40 overflow-hidden rounded-t-3xl bg-black/80 pointer-events-none">
-                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover grayscale brightness-75 contrast-125 scale-x-[-1] opacity-60" />
-                    {ghostVision && (
-                       <svg className="absolute inset-0 w-full h-full pointer-events-none z-20 mix-blend-screen opacity-50 filter drop-shadow-[0_0_10px_rgba(156,39,176,1)]">
-                         <line x1="20%" y1="30%" x2="50%" y2="50%" stroke={COLORS.purple} strokeWidth="4" />
-                         <line x1="50%" y1="50%" x2="80%" y2="80%" stroke={COLORS.purple} strokeWidth="4" />
-                       </svg>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
-                  </div>
-                )}
-                
-                <div className="relative mt-2 mb-8">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-orbitron font-black text-xl text-primary tracking-tighter uppercase">{selectedExercise.name}</h3>
-                    {arEnabled && !ghostVision && (
-                      <button onClick={activateMonarchVision} className="text-[10px] font-mono text-purple-400 bg-purple-900/30 px-3 py-1 rounded border border-purple-500/50 hover:bg-purple-800/50 flex items-center gap-1">
-                        <Eye size={12} /> MONARCH VISION (10 MP)
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-center gap-4">
-                      <div className="text-[11px] font-mono text-foreground font-bold tracking-[0.2em]">{formatTime(seconds)}</div>
-                      <div className="text-[11px] font-mono text-secondary font-bold tracking-[0.2em]">{warnings.length > 0 ? "POSTURE WARN" : "PERFECT FORM"}</div>
-                  </div>
+            <motion.div key="active" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.1 }} className="text-center relative z-10">
+              {arEnabled && (
+                <div className="absolute inset-0 -m-8 mb-40 overflow-hidden rounded-t-3xl bg-black/80 pointer-events-none">
+                  <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover grayscale brightness-75 contrast-125 scale-x-[-1] opacity-60" />
+                  {ghostVision && (
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none z-20 mix-blend-screen opacity-50 filter drop-shadow-[0_0_10px_rgba(156,39,176,1)]">
+                      <line x1="20%" y1="30%" x2="50%" y2="50%" stroke={COLORS.purple} strokeWidth="4" />
+                      <line x1="50%" y1="50%" x2="80%" y2="80%" stroke={COLORS.purple} strokeWidth="4" />
+                    </svg>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
                 </div>
+              )}
 
-                <div className="relative w-48 h-48 mx-auto mb-8">
-                  <svg className="w-full h-full -rotate-90 filter drop-shadow-[0_0_15px_rgba(56,189,248,0.2)]" viewBox="0 0 120 120">
-                    <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="4" />
-                    <motion.circle cx="60" cy="60" r="54" fill="none" stroke={COLORS.cyan} strokeWidth="8" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress)} />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <motion.div key={reps} initial={{ scale: 1.2, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="font-orbitron font-black text-5xl text-foreground tracking-tighter">
-                      {reps}
-                    </motion.div>
-                    <div className="text-[9px] font-mono text-muted-foreground uppercase opacity-60 tracking-[0.3em] font-bold">TARGET: {targetReps}</div>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 mb-4">
-                  <button onClick={() => { systemAudio?.playClick(); setIsRunning(r => !r); }} className="flex-1 py-4 rounded-xl flex items-center justify-center gap-3 font-orbitron font-black text-xs tracking-widest transition-all border shadow-lg bg-purple-500/10 border-purple-500/30 text-purple-400">
-                    {isRunning ? <Pause size={16} /> : <Play size={16} />}
-                    {isRunning ? "PAUSE" : "RESUME"}
-                  </button>
-                  <button 
-                    onClick={() => { systemAudio?.playClick(); setReps(r => r + 1); setFlawlessReps(r => r + 1); }} 
-                    disabled={!isRunning} 
-                    className="flex-1 py-4 rounded-xl font-orbitron font-black text-xs tracking-[0.3em] disabled:opacity-50 shadow-[0_4px_25px_rgba(56,189,248,0.6)] transition-transform active:scale-95 bg-cyan-400 text-black text-lg"
+              {/* Exercise name + posture status */}
+              <div className="relative mt-2 mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3
+                    className="font-orbitron font-black text-xl tracking-tight uppercase"
+                    style={{ color: "#06B6D4", textShadow: "0 0 20px rgba(6,182,212,0.6)" }}
                   >
-                    ＋ REP
-                  </button>
+                    {selectedExercise.name}
+                  </h3>
+                  {arEnabled && !ghostVision && (
+                    <button
+                      onClick={activateMonarchVision}
+                      className="font-mono text-[10px] px-3 py-1 rounded-lg border flex items-center gap-1 transition-all"
+                      style={{ color: "#A855F7", background: "rgba(124,58,237,0.1)", borderColor: "rgba(124,58,237,0.4)" }}
+                    >
+                      <Eye size={12} /> MONARCH (10 MP)
+                    </button>
+                  )}
                 </div>
+                <div className="flex items-center justify-center gap-6">
+                  <div className="font-mono text-[11px] font-bold tracking-[0.2em] text-white">{formatTime(seconds)}</div>
+                  <div
+                    className="font-mono text-[10px] font-black tracking-[0.2em] px-3 py-1 rounded"
+                    style={{
+                      color: warnings.length > 0 ? "#EF4444" : "#10B981",
+                      background: warnings.length > 0 ? "rgba(239,68,68,0.1)" : "rgba(16,185,129,0.1)",
+                      border: `1px solid ${warnings.length > 0 ? "rgba(239,68,68,0.3)" : "rgba(16,185,129,0.3)"}`,
+                    }}
+                  >
+                    {warnings.length > 0 ? "⚠ POSTURE WARN" : "✓ PERFECT FORM"}
+                  </div>
+                </div>
+              </div>
 
-                <div className="text-[9px] font-mono text-muted-foreground/50 text-center tracking-widest uppercase">
-                  SPACE BAR = +1 REP &nbsp;·&nbsp; TAP BUTTON ABOVE
+              {/* DRAMATIC REP COUNTER with progress ring */}
+              <div className="relative w-52 h-52 mx-auto mb-6">
+                {/* Outer glow ring */}
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    boxShadow: `0 0 40px rgba(6,182,212,${0.1 + progress * 0.4}), 0 0 80px rgba(6,182,212,${0.05 + progress * 0.2})`,
+                    borderRadius: "50%",
+                  }}
+                />
+                {/* SVG progress arc */}
+                <svg className="w-full h-full -rotate-90" style={{ filter: "drop-shadow(0 0 20px rgba(6,182,212,0.5))" }} viewBox="0 0 120 120">
+                  {/* Background track */}
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="5" />
+                  {/* Secondary dim track */}
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(6,182,212,0.1)" strokeWidth="8" />
+                  {/* Progress fill */}
+                  <motion.circle
+                    cx="60" cy="60" r="54" fill="none"
+                    stroke="url(#repGradient)"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={circumference * (1 - progress)}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                  />
+                  <defs>
+                    <linearGradient id="repGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#06B6D4" />
+                      <stop offset="100%" stopColor="#7C3AED" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                {/* Rep number — dramatic and glowing */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <motion.div
+                    key={reps}
+                    initial={{ scale: 1.35, opacity: 0.5 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="font-orbitron font-black leading-none"
+                    style={{
+                      fontSize: "4rem",
+                      color: "#E2E8F0",
+                      textShadow: "0 0 30px rgba(6,182,212,0.8), 0 0 60px rgba(6,182,212,0.4)",
+                    }}
+                  >
+                    {reps}
+                  </motion.div>
+                  <div className="font-mono text-[9px] text-slate-600 uppercase tracking-[0.3em] font-black mt-1">
+                    / {targetReps}
+                  </div>
                 </div>
-             </motion.div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3 mb-4">
+                <button
+                  onClick={() => { systemAudio?.playClick(); setIsRunning(r => !r); }}
+                  className="flex-1 py-4 rounded-xl flex items-center justify-center gap-2 font-orbitron font-black text-[10px] tracking-widest transition-all"
+                  style={{
+                    background: "rgba(124,58,237,0.1)",
+                    border: "1px solid rgba(124,58,237,0.35)",
+                    color: "#A855F7",
+                    boxShadow: "0 0 15px rgba(124,58,237,0.1)",
+                  }}
+                >
+                  {isRunning ? <Pause size={15} /> : <Play size={15} />}
+                  {isRunning ? "PAUSE" : "RESUME"}
+                </button>
+                <button
+                  onClick={() => { systemAudio?.playClick(); setReps(r => r + 1); setFlawlessReps(r => r + 1); }}
+                  disabled={!isRunning}
+                  className="flex-1 py-4 rounded-xl font-orbitron font-black text-xs tracking-[0.3em] disabled:opacity-40 transition-all active:scale-95 relative overflow-hidden group"
+                  style={{
+                    background: "linear-gradient(135deg, #06B6D4, #38BDF8)",
+                    color: "#030308",
+                    boxShadow: "0 4px 25px rgba(6,182,212,0.5)",
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-500 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  <span className="relative z-10">＋ REP</span>
+                </button>
+              </div>
+
+              {/* AR Camera toggle */}
+              <div className="flex items-center justify-center gap-3 mt-3">
+                <button
+                  onClick={toggleAR}
+                  disabled={arLoading}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl font-mono text-[9px] font-black tracking-[0.3em] uppercase transition-all"
+                  style={{
+                    color: arEnabled ? "#10B981" : "#94A3B8",
+                    background: arEnabled ? "rgba(16,185,129,0.1)" : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${arEnabled ? "rgba(16,185,129,0.3)" : "rgba(255,255,255,0.08)"}`,
+                  }}
+                >
+                  {arLoading
+                    ? <><Loader2 size={12} className="animate-spin" /> LOADING AR</>
+                    : arEnabled
+                    ? <><Camera size={12} /> AR ACTIVE</>
+                    : <><CameraOff size={12} /> ENABLE AR</>
+                  }
+                </button>
+              </div>
+              <div className="font-mono text-[8px] text-slate-700 text-center tracking-widest uppercase mt-2">
+                SPACE BAR = +1 REP · TAP BUTTON ABOVE
+              </div>
+            </motion.div>
           )}
 
           {phase === "complete" && (
             <motion.div key="complete" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center py-4">
-              <div className="text-7xl mb-6 filter drop-shadow-[0_0_30px_rgba(56,189,248,0.8)] animate-pulse">🏆</div>
-              <h2 className="font-orbitron font-black text-2xl text-primary mb-1 tracking-tighter uppercase">MISSION CLEARED</h2>
-              <div className="text-[10px] font-mono text-purple-400 mb-6 font-bold tracking-[0.2em]">INTENSITY RANK: [{intensityRankStr}]</div>
-              
+              {/* Flash effect on mount */}
+              <motion.div
+                initial={{ opacity: 0.8 }}
+                animate={{ opacity: 0 }}
+                transition={{ duration: 0.8 }}
+                className="absolute inset-0 rounded-3xl pointer-events-none"
+                style={{ background: "rgba(6,182,212,0.15)" }}
+              />
+              <div
+                className="text-7xl mb-6 animate-pulse"
+                style={{ filter: "drop-shadow(0 0 30px rgba(6,182,212,0.8))" }}
+              >
+                🏆
+              </div>
+              <h2
+                className="font-orbitron font-black text-2xl mb-1 tracking-tight uppercase"
+                style={{ color: "#06B6D4", textShadow: "0 0 30px rgba(6,182,212,0.6)" }}
+              >
+                MISSION CLEARED
+              </h2>
+              <div
+                className="font-mono text-[10px] font-bold tracking-[0.2em] mb-6 px-4 py-1.5 inline-block rounded"
+                style={{
+                  color: rankColor,
+                  background: `${rankColor}15`,
+                  border: `1px solid ${rankColor}40`,
+                  boxShadow: `0 0 12px ${rankColor}30`,
+                }}
+              >
+                INTENSITY RANK: [ {intensityRankStr} ]
+              </div>
+
               <div className="grid grid-cols-3 gap-3 mb-8">
-                {[ { label: "Reps", value: reps }, { label: "Flawless", value: flawlessReps }, { label: "Reward", value: `+${xpEarned} XP` } ].map(stat => (
-                  <div key={stat.label} className="p-4 glass rounded-2xl border border-white/5 bg-white/[0.02]">
-                    <div className="font-orbitron font-black text-md text-foreground mb-1 tracking-tighter">{stat.value}</div>
-                    <div className="text-[7px] font-mono text-muted-foreground uppercase tracking-widest font-bold">{stat.label}</div>
+                {[
+                  { label: "REPS", value: reps, color: "#06B6D4" },
+                  { label: "FLAWLESS", value: flawlessReps, color: "#A855F7" },
+                  { label: "XP REWARD", value: `+${xpEarned}`, color: "#F59E0B" },
+                ].map(stat => (
+                  <div
+                    key={stat.label}
+                    className="p-4 flex flex-col items-center"
+                    style={{
+                      background: `${stat.color}08`,
+                      border: `1px solid ${stat.color}20`,
+                      borderRadius: "16px",
+                      boxShadow: `inset 0 0 15px ${stat.color}05`,
+                    }}
+                  >
+                    <div
+                      className="font-orbitron font-black text-xl mb-1 tracking-tight"
+                      style={{ color: stat.color, textShadow: `0 0 15px ${stat.color}50` }}
+                    >
+                      {stat.value}
+                    </div>
+                    <div className="font-mono text-[7px] text-slate-600 uppercase tracking-widest font-black">{stat.label}</div>
                   </div>
                 ))}
               </div>
 
-              <button onClick={() => { systemAudio?.playClick(); onClose(); }} className="w-full py-4 font-orbitron font-black tracking-[0.5em] text-xs rounded-2xl shadow-[0_4px_30px_rgba(56,189,248,0.4)] group relative overflow-hidden" style={{ background: COLORS.cyan, color: "#000" }}>
+              <button
+                onClick={() => { systemAudio?.playClick(); onClose(); }}
+                className="w-full py-4 font-orbitron font-black tracking-[0.5em] text-xs relative overflow-hidden group"
+                style={{
+                  background: "linear-gradient(135deg, #06B6D4, #38BDF8)",
+                  color: "#030308",
+                  borderRadius: "16px",
+                  boxShadow: "0 4px 30px rgba(6,182,212,0.4)",
+                }}
+              >
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <span className="relative z-10 uppercase">[ Extract Rewards ]</span>
               </button>
             </motion.div>

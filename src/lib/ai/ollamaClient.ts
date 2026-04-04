@@ -7,7 +7,7 @@
 export const OLLAMA_MODEL =
   (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_OLLAMA_MODEL)
     ? process.env.NEXT_PUBLIC_OLLAMA_MODEL
-    : 'llama3';
+    : 'phi3:mini';
 
 const OLLAMA_TIMEOUT_MS = 5000;
 const OLLAMA_BASE_URL = 'http://localhost:11434/api/generate';

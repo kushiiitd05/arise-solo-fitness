@@ -1,0 +1,21 @@
+{
+  "name": "ARISE: Solo Leveling Fitness",
+  "short_name": "ARISE",
+  "description": "Gamified fitness system inspired by Solo Leveling",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#02020B",
+  "theme_color": "#11D2EF",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

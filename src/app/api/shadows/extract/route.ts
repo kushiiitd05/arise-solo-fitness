@@ -36,24 +36,12 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Fetch already-owned shadow IDs
-  // Note: .maybeSingle() used here for mock-compatibility in tests; in production Supabase
-  // returns data as array from a multi-row select, but maybeSingle returns null/object.
-  // We normalise below to handle both array and object shapes.
   const { data: ownedData } = await supabase
     .from("user_shadows")
     .select("shadow_id")
-    .eq("user_id", userId)
-    .maybeSingle();
+    .eq("user_id", userId);
 
-  // Normalise: real Supabase without maybeSingle returns array; with maybeSingle returns object|null
-  // In tests: maybeSingle returns array of objects (test mock pattern)
-  const ownedRowsNorm: Array<{ shadow_id: string }> = Array.isArray(ownedData)
-    ? ownedData
-    : ownedData
-    ? [ownedData]
-    : [];
-
-  const ownedIds = new Set(ownedRowsNorm.map((r) => r.shadow_id));
+  const ownedIds = new Set((ownedData ?? []).map((r: { shadow_id: string }) => r.shadow_id));
 
   // 3. Build weighted pool (excludes owned, weighted by hunter rank)
   const pool = buildWeightedPool(userRow.hunter_rank, ownedIds);

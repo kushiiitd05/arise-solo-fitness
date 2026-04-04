@@ -61,6 +61,13 @@ export function ExerciseGuideModal({
     };
   }, [exercise.id, userId]);
 
+  // Close on Escape key
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
   const hasMana = currentMana >= 1;
 
   const handleVisualUnlock = async () => {

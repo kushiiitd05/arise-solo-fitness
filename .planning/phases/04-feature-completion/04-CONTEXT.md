@@ -95,20 +95,22 @@ Wire 4 remaining UI surfaces into the Dashboard: Arena unlock gate (conditional 
 
 </specifics>
 
-<deferred>
-## Deferred Ideas
+<starred>
+## ⭐ Starred — MUST BUILD (Planned Future Phases)
 
-- **Full Rank Trial system** — formal workout challenge to advance rank (workout → trial → pass → rank D). Larger system for Phase 5+
-- **Notification system** — auto-dismiss notifications across all events (quest completion, stat allocation, reward unlock, system alerts). Flagged as broken (stuck on screen). Own phase.
-- **Ollama AI integration** — dynamic monster names, boss personalities, quest descriptions, workout challenge variations. Future phase.
-- **Manhwa chapter reward system** — chapter unlock UI on quest/boss completion. Currently disabled until fitness loop is stable.
-- **Battle system backend** — Arena battles via backend API using real player stats. Currently all client-side simulation.
-- **Rank XP calculation system** — formal rules for which events grant rank XP. Current: level → rank formula. Future: multi-event model.
-- **Dynamic daily quest generation** — level-adaptive quest generation vs. fixed templates. Future phase.
-- **Inventory item effects** — permanent vs. temporary stat bonuses from equipped items. Currently cosmetic. Future phase.
-- **Shadow army mechanics** — formalized extraction/reward flow for shadows. Future phase.
+These are confirmed in-scope systems. They are deferred from Phase 4 only because they are larger than Phase 4's scope. Each MUST be researched and planned — do NOT exclude from roadmap.
 
-</deferred>
+- **Full Rank Trial system** — formal workout challenge to advance rank (workout → trial → pass → rank D). Must research progression gating, trial flow, rank XP rules.
+- **Notification system** — auto-dismiss notifications across all events (quest completion, stat allocation, reward unlock, system alerts). Flagged as broken (stuck on screen). Must fix and unify.
+- **Ollama AI integration** — dynamic monster names, boss personalities, quest descriptions, workout challenge variations. Must research Ollama API, streaming, prompt templates.
+- **Manhwa chapter reward system** — chapter unlock UI on quest/boss completion. Must research unlock gating, reader integration, reward trigger events.
+- **Battle system backend** — Arena battles via backend API using real player stats. Must replace client-side simulation with real matchmaking + stats.
+- **Rank XP calculation system** — formal rules for which events grant rank XP. Must design multi-event model (workouts, quests, boss kills all contribute).
+- **Dynamic daily quest generation** — level-adaptive quest generation vs. fixed templates. Must research generation algorithm, difficulty scaling.
+- **Inventory item effects** — permanent vs. temporary stat bonuses from equipped items. Must design effect engine, persistence.
+- **Shadow army mechanics** — formalized extraction/reward flow for shadows. Must design extraction trigger, shadow stats, army composition rules.
+
+</starred>
 
 ---
 

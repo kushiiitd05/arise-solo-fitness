@@ -1,0 +1,626 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── ENUMS ──────────────────────────────────────────────────
+
+enum HunterRank {
+  E
+  D
+  C
+  B
+  A
+  S
+  NATIONAL
+}
+
+enum JobClass {
+  NONE
+  FIGHTER
+  MAGE
+  ASSASSIN
+  TANK
+  HEALER
+}
+
+enum ExerciseDifficulty {
+  E
+  D
+  C
+  B
+  A
+  S
+}
+
+enum QuestType {
+  DAILY
+  WEEKLY
+  STORY
+  EMERGENCY
+  HIDDEN
+  PENALTY
+}
+
+enum QuestStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+enum DungeonType {
+  SOLO
+  GROUP
+  RAID
+  PENALTY
+  GATE
+}
+
+enum ItemType {
+  EQUIPMENT
+  CONSUMABLE
+  COSMETIC
+  CHAPTER
+  SHADOW_FRAGMENT
+}
+
+enum ItemRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+  MYTHIC
+}
+
+enum ShadowType {
+  SOLDIER
+  KNIGHT
+  ELITE
+  COMMANDER
+  MONARCH
+}
+
+enum PvpType {
+  RANKED
+  CASUAL
+  GUILD_WAR
+}
+
+enum BattleStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum GuildRole {
+  MASTER
+  VICE_MASTER
+  OFFICER
+  MEMBER
+}
+
+enum NotifType {
+  SYSTEM
+  QUEST
+  GUILD
+  PVP
+  ACHIEVEMENT
+  CHAPTER
+  LEVELUP
+}
+
+enum UnlockMethod {
+  WORKOUT
+  QUEST
+  DUNGEON
+  PURCHASE
+  GIFT
+  ACHIEVEMENT
+}
+
+enum LeaderboardType {
+  GLOBAL
+  GUILD
+  FRIENDS
+  WEEKLY
+  MONTHLY
+}
+
+enum WorkoutType {
+  STRENGTH
+  CARDIO
+  FLEXIBILITY
+  MIXED
+  DUNGEON
+}
+
+// ── MODELS ─────────────────────────────────────────────────
+
+model User {
+  id           String      @id @default(dbgenerated("auth.uid()")) @db.Uuid
+  username     String      @unique @db.VarChar(30)
+  email        String?
+  avatarUrl    String?     @map("avatar_url")
+  hunterRank   HunterRank  @default(E) @map("hunter_rank")
+  jobClass     JobClass    @default(NONE) @map("job_class")
+  level        Int         @default(1)
+  currentXp    BigInt      @default(0) @map("current_xp")
+  title        String?     @default("E-Rank Hunter") @db.VarChar(100)
+  isActive     Boolean     @default(true) @map("is_active")
+  lastSeenAt   DateTime?   @default(now()) @map("last_seen_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at")
+
+  stats          UserStats?
+  workouts       Workout[]
+  workoutLogs    WorkoutLog[]
+  dailyQuests    DailyQuest[]
+  questProgress  QuestProgress[]
+  dungeonRuns    DungeonRun[]
+  guildMembers   GuildMember?
+  guildsLed      Guild[]        @relation("GuildLeader")
+  chatMessages   GuildChatMessage[]
+  shadows        UserShadow[]
+  chapters       UserChapter[]
+  inventory      UserInventory[]
+  pvpChallenger  PvpBattle[]    @relation("Challenger")
+  pvpOpponent    PvpBattle[]    @relation("Opponent")
+  pvpWins        PvpBattle[]    @relation("Winner")
+  leaderboardPos Leaderboard[]
+  achievements   UserAchievement[]
+  notifications  Notification[]
+  friends        Friend[]       @relation("UserFriends")
+  friendOf       Friend[]       @relation("FriendTo")
+
+  @@map("users")
+}
+
+model UserStats {
+  userId               String   @id @map("user_id") @db.Uuid
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strength             Int      @default(10)
+  vitality             Int      @default(10)
+  agility              Int      @default(10)
+  intelligence         Int      @default(10)
+  perception           Int      @default(10)
+  sense                Int      @default(10)
+  availableStatPoints  Int      @default(0) @map("available_stat_points")
+  totalWorkouts        Int?     @default(0) @map("total_workouts")
+  totalXpEarned        BigInt?  @default(0) @map("total_xp_earned")
+  currentStreak         Int?     @default(0) @map("current_streak")
+  longestStreak        Int?     @default(0) @map("longest_streak")
+  totalCaloriesBurned  Int?     @default(0) @map("total_calories_burned")
+  pvpRating            Int?     @default(1000) @map("pvp_rating")
+  pvpWins              Int?     @default(0) @map("pvp_wins")
+  pvpLosses            Int?     @default(0) @map("pvp_losses")
+  updatedAt            DateTime? @default(now()) @updatedAt @map("updated_at")
+
+  @@map("user_stats")
+}
+
+model Exercise {
+  id                  String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                String             @db.VarChar(100)
+  description         String?
+  muscleGroup         String?            @map("muscle_group") @db.VarChar(100)
+  category            String?            @db.VarChar(50)
+  difficulty          ExerciseDifficulty? @default(E)
+  xpPerRep            Int?               @default(5) @map("xp_per_rep")
+  xpPerSecond         Int?               @default(1) @map("xp_per_second")
+  statPrimary         String             @map("stat_primary") @db.VarChar(20)
+  statBonus           Json?              @default("{}") @map("stat_bonus")
+  arDetectionSupported Boolean?          @default(false) @map("ar_detection_supported")
+  demoVideoUrl        String?            @map("demo_video_url")
+  demoImageUrl        String?            @map("demo_image_url")
+  emoji               String?            @default("💪") @db.VarChar(10)
+  isActive            Boolean?           @default(true) @map("is_active")
+  createdAt           DateTime?          @default(now()) @map("created_at")
+
+  pvpBattles PvpBattle[]
+
+  @@map("exercises")
+}
+
+model Workout {
+  id                 String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId             String             @map("user_id") @db.Uuid
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name               String?            @db.VarChar(200)
+  workoutType        WorkoutType?       @default(MIXED) @map("workout_type")
+  difficulty         ExerciseDifficulty? @default(E)
+  estimatedDuration  Int?               @map("estimated_duration")
+  totalXpReward      Int?               @default(0) @map("total_xp_reward")
+  exercises          Json               @default("[]")
+  isAiGenerated      Boolean?           @default(false) @map("is_ai_generated")
+  isTemplate         Boolean?           @default(false) @map("is_template")
+  createdAt          DateTime?          @default(now()) @map("created_at")
+
+  logs WorkoutLog[]
+
+  @@map("workouts")
+}
+
+model WorkoutLog {
+  id                 String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutId          String?   @map("workout_id") @db.Uuid
+  workout            Workout?  @relation(fields: [workoutId], references: [id])
+  startedAt          DateTime  @map("started_at")
+  completedAt        DateTime? @map("completed_at")
+  durationSeconds    Int       @map("duration_seconds")
+  totalXpEarned      Int?      @default(0) @map("total_xp_earned")
+  caloriesBurned     Int?      @default(0) @map("calories_burned")
+  exercisesCompleted Json      @default("[]") @map("exercises_completed")
+  statGains          Json?     @default("{}") @map("stat_gains")
+  arVerified         Boolean?  @default(false) @map("ar_verified")
+  formScore          Float?    @map("form_score")
+  notes              String?
+  createdAt          DateTime? @default(now()) @map("created_at")
+
+  @@map("workout_logs")
+}
+
+model QuestTemplate {
+  id               String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name             String       @db.VarChar(200)
+  description      String?
+  questType        QuestType    @map("quest_type")
+  icon             String?      @default("📋") @db.VarChar(10)
+  requirements     Json         @default("{}")
+  xpReward         Int          @default(0) @map("xp_reward")
+  statRewards      Json?        @default("{}") @map("stat_rewards")
+  itemRewards      Json?        @default("[]") @map("item_rewards")
+  rankRequirement  HunterRank?  @default(E) @map("rank_requirement")
+  isRepeatable      Boolean?     @default(true) @map("is_repeatable")
+  isActive         Boolean?     @default(true) @map("is_active")
+  createdAt        DateTime?    @default(now()) @map("created_at")
+
+  progress QuestProgress[]
+
+  @@map("quest_templates")
+}
+
+model DailyQuest {
+  id               String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questDate        DateTime  @db.Date @map("quest_date")
+  quests           Json      @default("[]")
+  allCompleted     Boolean?  @default(false) @map("all_completed")
+  penaltyTriggered  Boolean?  @default(false) @map("penalty_triggered")
+  bonusXpClaimed   Boolean?  @default(false) @map("bonus_xp_claimed")
+  createdAt        DateTime? @default(now()) @map("created_at")
+
+  @@unique([userId, questDate])
+  @@map("daily_quests")
+}
+
+model QuestProgress {
+  id               String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId           String        @map("user_id") @db.Uuid
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questTemplateId  String        @map("quest_template_id") @db.Uuid
+  template         QuestTemplate @relation(fields: [questTemplateId], references: [id])
+  status           QuestStatus?  @default(ACTIVE)
+  progress         Json?         @default("{}")
+  startedAt        DateTime?     @default(now()) @map("started_at")
+  completedAt      DateTime?     @map("completed_at")
+  expiresAt        DateTime?     @map("expires_at")
+
+  @@map("quest_progress")
+}
+
+model Dungeon {
+  id               String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name             String       @db.VarChar(200)
+  description      String?
+  dungeonType      DungeonType? @default(SOLO) @map("dungeon_type")
+  difficultyRank   HunterRank   @default(E) @map("difficulty_rank")
+  timeLimitSec     Int          @default(1800) @map("time_limit_sec")
+  exerciseSequence Json         @default("[]") @map("exercise_sequence")
+  xpReward         Int          @default(0) @map("xp_reward")
+  statRewards      Json?        @default("{}") @map("stat_rewards")
+  itemDrops        Json?        @default("[]") @map("item_drops")
+  shadowDropRate   Float?       @default(0.1) @map("shadow_drop_rate")
+  chapterDropRate  Float?       @default(0.0) @map("chapter_drop_rate")
+  minLevel         Int?         @default(1) @map("min_level")
+  maxPlayers       Int?         @default(1) @map("max_players")
+  bossExercise     Json?        @map("boss_exercise")
+  isPenalty        Boolean?     @default(false) @map("is_penalty")
+  isActive         Boolean?     @default(true) @map("is_active")
+  createdAt        DateTime?    @default(now()) @map("created_at")
+
+  runs DungeonRun[]
+
+  @@map("dungeons")
+}
+
+model DungeonRun {
+  id                 String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  dungeonId          String        @map("dungeon_id") @db.Uuid
+  dungeon            Dungeon       @relation(fields: [dungeonId], references: [id])
+  userId             String?       @map("user_id") @db.Uuid
+  user               User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  guildId            String?       @map("guild_id") @db.Uuid
+  guild              Guild?        @relation(fields: [guildId], references: [id], onDelete: SetNull)
+  participants       String[]      @default([]) @db.Uuid
+  status             BattleStatus? @default(PENDING)
+  startedAt          DateTime?     @default(now()) @map("started_at")
+  completedAt        DateTime?     @map("completed_at")
+  durationSeconds    Int?          @map("duration_seconds")
+  results            Json?         @default("{}")
+  xpAwarded          Int?          @default(0) @map("xp_awarded")
+  rewardsDistributed Boolean?      @default(false) @map("rewards_distributed")
+  shadowExtracted    String?       @map("shadow_extracted") @db.Uuid
+  chapterUnlocked    String?       @map("chapter_unlocked") @db.Uuid
+
+  @@map("dungeon_runs")
+}
+
+model Guild {
+  id           String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name         String       @unique @db.VarChar(100)
+  description  String?
+  emblemUrl    String?      @map("emblem_url")
+  leaderId     String       @map("leader_id") @db.Uuid
+  leader       User         @relation("GuildLeader", fields: [leaderId], references: [id])
+  rank         HunterRank?  @default(E)
+  level        Int?         @default(1)
+  currentXp    BigInt?      @default(0) @map("current_xp")
+  memberCount  Int?         @default(1) @map("member_count")
+  maxMembers   Int?         @default(30) @map("max_members")
+  isRecruiting Boolean?     @default(true) @map("is_recruiting")
+  totalPower   BigInt?      @default(0) @map("total_power")
+  createdAt    DateTime?    @default(now()) @map("created_at")
+  updatedAt    DateTime?    @default(now()) @updatedAt @map("updated_at")
+
+  members      GuildMember[]
+  chatMessages GuildChatMessage[]
+  dungeonRuns  DungeonRun[]
+
+  @@map("guilds")
+}
+
+model GuildMember {
+  guildId        String    @map("guild_id") @db.Uuid
+  guild          Guild     @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId         String    @unique @map("user_id") @db.Uuid
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           GuildRole? @default(MEMBER)
+  joinedAt       DateTime? @default(now()) @map("joined_at")
+  contributionXp BigInt?   @default(0) @map("contribution_xp")
+
+  @@id([guildId, userId])
+  @@map("guild_members")
+}
+
+model GuildChatMessage {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  guildId    String    @map("guild_id") @db.Uuid
+  guild      Guild     @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId     String    @map("user_id") @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content    String
+  msgType    String?   @default("TEXT") @map("msg_type") @db.VarChar(20)
+  createdAt  DateTime? @default(now()) @map("created_at")
+
+  @@map("guild_chat_messages")
+}
+
+model Shadow {
+  id           String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name         String       @db.VarChar(100)
+  description  String?
+  rank         HunterRank   @default(E)
+  shadowType   ShadowType?  @default(SOLDIER) @map("shadow_type")
+  basePower    Int?         @default(100) @map("base_power")
+  ability      Json?        @default("{}")
+  rarity       ItemRarity?  @default(COMMON)
+  imageUrl     String?      @map("image_url")
+  animationUrl String?      @map("animation_url")
+  emoji        String?      @default("👤") @db.VarChar(10)
+  isActive     Boolean?     @default(true) @map("is_active")
+  createdAt    DateTime?    @default(now()) @map("created_at")
+
+  userShadows UserShadow[]
+
+  @@map("shadows")
+}
+
+model UserShadow {
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shadowId       String    @map("shadow_id") @db.Uuid
+  shadow         Shadow    @relation(fields: [shadowId], references: [id])
+  level          Int?      @default(1)
+  currentXp      Int?      @default(0) @map("current_xp")
+  nickname       String?   @db.VarChar(50)
+  extractedFrom  String?   @map("extracted_from")
+  acquiredAt     DateTime? @default(now()) @map("acquired_at")
+
+  @@unique([userId, shadowId])
+  @@map("user_shadows")
+}
+
+model ManhwaChapter {
+  id                   String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  title                String      @db.VarChar(200)
+  chapterNumber        Int         @unique @map("chapter_number")
+  arcName              String?     @map("arc_name") @db.VarChar(100)
+  description          String?
+  panelCount           Int?        @default(0) @map("panel_count")
+  difficultyTierRequired HunterRank? @default(E) @map("difficulty_tier_required")
+  rarity               ItemRarity? @default(COMMON)
+  fileUrl              String?     @map("file_url")
+  thumbnailUrl         String?     @map("thumbnail_url")
+  previewPanels        Int?        @default(3) @map("preview_panels")
+  totalUnlocks         Int?        @default(0) @map("total_unlocks")
+  emoji                String?     @default("📖") @db.VarChar(10)
+  isActive             Boolean?    @default(true) @map("is_active")
+  createdAt            DateTime?   @default(now()) @map("created_at")
+
+  userChapters UserChapter[]
+
+  @@map("manhwa_chapters")
+}
+
+model UserChapter {
+  id           String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId       String        @map("user_id") @db.Uuid
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapterId    String        @map("chapter_id") @db.Uuid
+  chapter      ManhwaChapter @relation(fields: [chapterId], references: [id])
+  unlockedAt   DateTime?     @default(now()) @map("unlocked_at")
+  unlockMethod UnlockMethod? @default(WORKOUT) @map("unlock_method")
+  readProgress Float?        @default(0) @map("read_progress")
+  isDownloaded Boolean?      @default(false) @map("is_downloaded")
+  isFavorite   Boolean?      @default(false) @map("is_favorite")
+
+  @@unique([userId, chapterId])
+  @@map("user_chapters")
+}
+
+model Item {
+  id          String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String      @db.VarChar(200)
+  description String?
+  itemType    ItemType    @map("item_type")
+  rarity      ItemRarity? @default(COMMON)
+  effects     Json?       @default("{}")
+  imageUrl    String?     @map("image_url")
+  emoji       String?     @default("🎁") @db.VarChar(10)
+  isTradeable Boolean?    @default(false) @map("is_tradeable")
+  isActive    Boolean?    @default(true) @map("is_active")
+  createdAt   DateTime?   @default(now()) @map("created_at")
+
+  inventory UserInventory[]
+
+  @@map("items")
+}
+
+model UserInventory {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemId     String    @map("item_id") @db.Uuid
+  item       Item      @relation(fields: [itemId], references: [id])
+  quantity   Int       @default(1)
+  equipped   Boolean?  @default(false)
+  acquiredAt DateTime? @default(now()) @map("acquired_at")
+
+  @@map("user_inventory")
+}
+
+model PvpBattle {
+  id               String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  challengerId     String        @map("challenger_id") @db.Uuid
+  challenger       User          @relation("Challenger", fields: [challengerId], references: [id])
+  opponentId       String        @map("opponent_id") @db.Uuid
+  opponent         User          @relation("Opponent", fields: [opponentId], references: [id])
+  pvpType          PvpType?      @default(CASUAL) @map("pvp_type")
+  exerciseId       String?       @map("exercise_id") @db.Uuid
+  exercise         Exercise?     @relation(fields: [exerciseId], references: [id])
+  challengerScore  Int?          @default(0) @map("challenger_score")
+  opponentScore    Int?          @default(0) @map("opponent_score")
+  winnerId         String?       @map("winner_id") @db.Uuid
+  winner           User?         @relation("Winner", fields: [winnerId], references: [id])
+  xpReward         Int?          @default(0) @map("xp_reward")
+  ratingChange     Int?          @default(0) @map("rating_change")
+  status           BattleStatus? @default(PENDING)
+  startedAt        DateTime?     @default(now()) @map("started_at")
+  completedAt      DateTime?     @map("completed_at")
+
+  @@map("pvp_battles")
+}
+
+model Leaderboard {
+  id            String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  boardType     LeaderboardType @map("board_type")
+  userId        String          @map("user_id") @db.Uuid
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score         BigInt          @default(0)
+  rankPosition  Int?            @map("rank_position")
+  periodStart   DateTime?       @db.Date @map("period_start")
+  periodEnd     DateTime?       @db.Date @map("period_end")
+  updatedAt     DateTime?       @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([boardType, userId, periodStart])
+  @@map("leaderboards")
+}
+
+model Friend {
+  userId    String    @map("user_id") @db.Uuid
+  user      User      @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friendId  String    @map("friend_id") @db.Uuid
+  friend    User      @relation("FriendTo", fields: [friendId], references: [id], onDelete: Cascade)
+  status    String?   @default("PENDING") @db.VarChar(20)
+  createdAt DateTime? @default(now()) @map("created_at")
+
+  @@id([userId, friendId])
+  @@map("friends")
+}
+
+model Achievement {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name         String    @db.VarChar(200)
+  description  String?
+  icon         String?   @default("🏆") @db.VarChar(10)
+  category     String?   @db.VarChar(50)
+  requirement  Json      @default("{}")
+  rewardXp     Int?      @default(0) @map("reward_xp")
+  rewardItems  Json?     @default("[]") @map("reward_items")
+  rewardTitle  String?   @map("reward_title") @db.VarChar(100)
+  isHidden     Boolean?  @default(false) @map("is_hidden")
+  isActive     Boolean?  @default(true) @map("is_active")
+  createdAt    DateTime? @default(now()) @map("created_at")
+
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  userId        String      @map("user_id") @db.Uuid
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String      @map("achievement_id") @db.Uuid
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  progress      Json?       @default("{}")
+  completed     Boolean?    @default(false)
+  completedAt   DateTime?   @map("completed_at")
+
+  @@id([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model Notification {
+  id        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifType NotifType? @default(SYSTEM) @map("notif_type")
+  title     String    @db.VarChar(200)
+  body      String?
+  icon      String?   @default("🔔") @db.VarChar(10)
+  data      Json?     @default("{}")
+  read      Boolean?  @default(false)
+  createdAt DateTime? @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+model XpCurve {
+  level             Int        @id
+  xpRequired        BigInt     @map("xp_required")
+  rankAtLevel       HunterRank @map("rank_at_level")
+  statPointsAwarded Int?       @default(3) @map("stat_points_awarded")
+
+  @@map("xp_curves")
+}
