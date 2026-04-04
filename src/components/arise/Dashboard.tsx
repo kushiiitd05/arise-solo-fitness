@@ -66,6 +66,23 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
   const prevRankRef = useRef<string>(rank);
   const [arenaJustUnlocked, setArenaJustUnlocked] = useState(false);
   const [extractionTokens, setExtractionTokens] = useState(0);
+  const [penaltyCountdown, setPenaltyCountdown] = useState("--:--:--");
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      const diff = Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
+      const h = String(Math.floor(diff / 3600)).padStart(2, "0");
+      const m = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+      const s = String(diff % 60).padStart(2, "0");
+      setPenaltyCountdown(`${h}:${m}:${s}`);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (prevRankRef.current === "E" && rank !== "E") {
@@ -82,12 +99,13 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
     const fetchTokens = async () => {
       try {
         const { supabase } = await import("@/lib/supabase");
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("users")
           .select("extraction_tokens")
           .eq("id", user.id)
           .maybeSingle();
-        if (data?.extraction_tokens !== undefined) {
+        // Column may not exist on older DB instances — silently fall back to 0
+        if (!error && data?.extraction_tokens !== undefined) {
           setExtractionTokens(data.extraction_tokens ?? 0);
         }
       } catch (err) {
@@ -146,7 +164,20 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
     { id: "GATES",   label: "GATES",   icon: <DoorOpen size={22} /> },
     { id: "STORAGE", label: "STORAGE", icon: <Package size={22} /> },
     { id: "ARENA",   label: "ARENA",   icon: <Swords size={22} /> },
+    { id: "SHADOWS", label: "SHADOWS", icon: <Ghost size={22} /> },
+    { id: "GUILD",   label: "GUILD",   icon: <Users size={22} /> },
   ];
+
+  // Rank color helper
+  const rankColors: Record<string, string> = {
+    S: "#F59E0B", A: "#EF4444", B: "#8B5CF6", C: "#06B6D4", D: "#10B981", E: "#94A3B8"
+  };
+  const rankGlows: Record<string, string> = {
+    S: "rgba(245,158,11,0.4)", A: "rgba(239,68,68,0.4)", B: "rgba(139,92,246,0.4)",
+    C: "rgba(6,182,212,0.4)", D: "rgba(16,185,129,0.4)", E: "rgba(148,163,184,0.2)"
+  };
+  const currentRankColor = rankColors[rank] || "#94A3B8";
+  const currentRankGlow  = rankGlows[rank]  || "rgba(148,163,184,0.2)";
 
   return (
     <div className="bg-[#030308] min-h-screen text-[#E2E8F0] font-exo relative overflow-hidden flex flex-col scanlines selection:bg-[#7C3AED]/30">
@@ -163,77 +194,187 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
           pointer-events: none;
           z-index: 100;
         }
+        .system-readout {
+          font-family: 'Share Tech Mono', monospace;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+        @keyframes grid-drift {
+          0% { background-position: 0 0, 0 0; }
+          100% { background-position: 50px 50px, 50px 50px; }
+        }
       `}</style>
 
       {/* ── BACKGROUND AMBIENCE ── */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-[#7C3AED]/10 blur-[150px] animate-pulse" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-[#06B6D4]/5 blur-[150px]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(124,58,237,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(124,58,237,0.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px)',
+            backgroundSize: '50px 50px',
+            animation: 'grid-drift 8s linear infinite',
+          }}
+        />
       </div>
 
       {/* ── NAVIGATION LEFT BAR ── */}
-      <nav className="fixed left-0 top-0 bottom-0 w-20 z-50 bg-[#080514]/80 backdrop-blur-3xl border-r border-[#7C3AED]/20 flex flex-col items-center py-10 hidden lg:flex">
-         <div className="w-12 h-12 mb-12 flex items-center justify-center bg-gradient-to-br from-[#7C3AED] to-[#A855F7] rounded-[14px] shadow-[0_0_20px_rgba(124,58,237,0.4)] group cursor-pointer transition-all hover:scale-110 active:scale-95" onClick={() => setActiveTab("STATUS")}>
-            <Zap size={24} className="text-[#030308]" />
-         </div>
+      <nav className="fixed left-0 top-0 bottom-0 w-20 z-50 bg-[#080514]/90 backdrop-blur-3xl border-r border-[#7C3AED]/20 flex flex-col items-center py-10 hidden lg:flex">
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#7C3AED]/40 to-transparent" />
 
-         <div className="flex-1 flex flex-col gap-8">
-            {TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={cn(
-                  "p-4 rounded-xl transition-all relative group",
-                  activeTab === tab.id ? "text-[#7C3AED] bg-[#7C3AED]/10" : "text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-white/5"
-                )}
-              >
-                <div className={cn("transition-transform group-hover:scale-110", activeTab === tab.id && "drop-shadow-[0_0_8px_rgba(124,58,237,0.8)]")}>
-                  {tab.icon}
-                </div>
-                {activeTab === tab.id && (
-                  <motion.div layoutId="nav-line" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#7C3AED] rounded-r-full shadow-[0_0_10px_#7C3AED]" />
-                )}
-              </button>
-            ))}
-         </div>
+        {/* ARISE logo button */}
+        <div
+          className="w-12 h-12 mb-12 flex items-center justify-center rounded-[14px] cursor-pointer transition-all hover:scale-110 active:scale-95 relative"
+          style={{
+            background: "linear-gradient(135deg, #7C3AED, #A855F7)",
+            boxShadow: "0 0 25px rgba(124,58,237,0.5), 0 0 50px rgba(124,58,237,0.2)",
+          }}
+          onClick={() => setActiveTab("STATUS")}
+        >
+          <Zap size={24} className="text-[#030308]" />
+          {/* Pulsing glow ring */}
+          <div className="absolute -inset-1 rounded-[18px] animate-pulse opacity-30"
+            style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)", filter: "blur(6px)" }} />
+        </div>
 
-         <button onClick={() => setShowSettings(true)} className="p-4 text-[#94A3B8] hover:text-[#E2E8F0] transition-colors group">
-            <Settings2 size={24} className="group-hover:rotate-90 transition-transform" />
-         </button>
+        <div className="flex-1 flex flex-col gap-6">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id as any); setShowWorkout(false); }}
+              className={cn(
+                "relative p-4 rounded-xl transition-all group",
+                activeTab === tab.id
+                  ? "text-[#7C3AED] bg-[#7C3AED]/10"
+                  : "text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-white/5"
+              )}
+              title={tab.label}
+            >
+              <div className={cn("transition-transform group-hover:scale-110 duration-300", activeTab === tab.id && "drop-shadow-[0_0_10px_rgba(124,58,237,0.9)]")}>
+                {tab.icon}
+              </div>
+              {activeTab === tab.id && (
+                <>
+                  {/* Active indicator — left glow bar */}
+                  <motion.div
+                    layoutId="nav-line"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 rounded-r-full"
+                    style={{ background: "#7C3AED", boxShadow: "0 0 12px rgba(124,58,237,1), 0 0 24px rgba(124,58,237,0.5)" }}
+                  />
+                  {/* Tooltip label */}
+                  <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2 py-1 rounded bg-[#0a0a14] border border-[#7C3AED]/30 text-[8px] font-mono font-black tracking-widest text-[#7C3AED] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    {tab.label}
+                  </div>
+                </>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setShowSettings(true)}
+          className="p-4 text-[#94A3B8] hover:text-[#E2E8F0] transition-all group hover:bg-white/5 rounded-xl"
+        >
+          <Settings2 size={22} className="group-hover:rotate-90 transition-transform duration-500" />
+        </button>
+        {/* Bottom accent line */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#7C3AED]/20 to-transparent" />
       </nav>
 
       <div className="lg:pl-20 flex-1 flex flex-col relative z-10 h-full overflow-hidden">
         {/* ── TOP HEADER ── */}
-        <header className="px-10 py-8 flex items-center justify-between bg-gradient-to-b from-[#030308]/95 to-transparent border-b border-white/5">
+        <header className="px-10 py-6 flex items-center justify-between border-b border-white/5 relative"
+          style={{ background: "linear-gradient(to bottom, rgba(3,3,8,0.98) 0%, rgba(3,3,8,0.85) 100%)" }}
+        >
+          {/* Subtle header top accent */}
+          <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(to right, transparent, ${currentRankColor}30, transparent)` }} />
+
           <div className="flex items-center gap-8">
+            {/* Avatar with rank-colored glow ring */}
             <div className="relative cursor-pointer group" onClick={() => setShowProfile(true)}>
-               <div className="w-20 h-20 bg-[#080514] border border-[#7C3AED]/40 rounded-2xl flex items-center justify-center transition-all group-hover:border-[#7C3AED] group-hover:shadow-[0_0_25px_rgba(124,58,237,0.4)] group-hover:scale-105 active:scale-95 overflow-hidden">
-                  <span className="text-5xl filter grayscale group-hover:grayscale-0 transition-all duration-500">{JOB_CLASS_ICONS[user.jobClass as keyof typeof JOB_CLASS_ICONS] || "👤"}</span>
-               </div>
-               <div className="absolute -bottom-2 -right-2 system-readout text-[10px] bg-[#D97706] text-[#030308] px-3 py-1 rounded-md font-black border border-[#030308] shadow-[0_10px_20px_rgba(217,119,6,0.3)] tracking-tighter">
-                 {rank}_RANK
-               </div>
+              {/* Rank glow ring */}
+              <div
+                className="absolute -inset-1 rounded-[20px] opacity-50 group-hover:opacity-80 transition-opacity animate-pulse"
+                style={{ background: `linear-gradient(135deg, ${currentRankColor}40, transparent)`, filter: "blur(4px)" }}
+              />
+              <div
+                className="relative w-18 h-18 flex items-center justify-center transition-all group-hover:scale-105 active:scale-95 overflow-hidden"
+                style={{
+                  width: 72, height: 72,
+                  background: "#080514",
+                  border: `2px solid ${currentRankColor}50`,
+                  borderRadius: "18px",
+                  boxShadow: `0 0 20px ${currentRankGlow}`,
+                }}
+              >
+                <span className="text-4xl filter grayscale group-hover:grayscale-0 transition-all duration-500">
+                  {JOB_CLASS_ICONS[user.jobClass as keyof typeof JOB_CLASS_ICONS] || "👤"}
+                </span>
+              </div>
+              {/* Rank badge — rank-colored */}
+              <div
+                className="absolute -bottom-2 -right-2 system-readout text-[9px] px-2 py-0.5 rounded font-black border border-black/60 tracking-tight"
+                style={{
+                  background: currentRankColor,
+                  color: "#030308",
+                  boxShadow: `0 4px 12px ${currentRankGlow}`,
+                }}
+              >
+                {rank}
+              </div>
+              {/* ONLINE indicator */}
+              <div
+                className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#030308]"
+                style={{
+                  background: "#10B981",
+                  boxShadow: "0 0 8px rgba(16,185,129,0.8)",
+                  animation: "online-pulse 2s ease-in-out infinite",
+                }}
+              />
             </div>
 
             <div>
-              <div className="flex items-center gap-6 mb-3">
-                <h1 className="text-3xl font-black text-[#E2E8F0] tracking-tight">{user.username}</h1>
-                <div className="px-4 py-1.5 bg-[#7C3AED]/10 border border-[#7C3AED]/30 rounded-lg shadow-xl">
-                   <span className="system-readout text-[11px] text-[#A855F7] font-black uppercase">LVL_{user.level}</span>
+              <div className="flex items-center gap-4 mb-2">
+                <h1
+                  className="text-2xl font-black text-[#E2E8F0] tracking-tight"
+                  style={{ textShadow: `0 0 20px ${currentRankColor}40` }}
+                >
+                  {user.username}
+                </h1>
+                <div
+                  className="px-3 py-1 rounded-lg"
+                  style={{
+                    background: "rgba(124,58,237,0.1)",
+                    border: "1px solid rgba(124,58,237,0.3)",
+                  }}
+                >
+                  <span className="system-readout text-[10px] text-[#A855F7] font-black">LVL_{user.level}</span>
+                </div>
+                {/* ONLINE status chip */}
+                <div className="hidden xl:flex items-center gap-1.5 px-2 py-1 rounded"
+                  style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)" }}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" style={{ animation: "online-pulse 2s ease-in-out infinite", boxShadow: "0 0 6px rgba(16,185,129,0.8)" }} />
+                  <span className="system-readout text-[8px] text-[#10B981] font-black">ONLINE</span>
                 </div>
               </div>
-              <div className="flex items-center gap-6">
-                 <div className="w-64 md:w-96 h-2 bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(user.currentXp / xpMax) * 100}%` }}
-                      className="h-full bg-gradient-to-r from-[#06B6D4] via-[#38BDF8] to-[#7C3AED] shadow-[0_0_15px_rgba(6,182,212,0.6)]"
-                    />
-                 </div>
-                 <span className="system-readout text-[10px] text-[#06B6D4] font-black opacity-80 tracking-widest uppercase">
-                   {Math.floor((user.currentXp / xpMax) * 100)}%_SYNC
-                 </span>
+              <div className="flex items-center gap-4">
+                {/* Animated XP bar */}
+                <div className="relative h-2.5 rounded-full overflow-hidden border border-white/5" style={{ width: "min(384px, 60vw)", background: "rgba(255,255,255,0.04)" }}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(user.currentXp / xpMax) * 100}%` }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    className="h-full xp-bar-gradient"
+                  />
+                  {/* Shimmer overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ animation: "stat-bar-shine 3s ease-in-out infinite" }} />
+                </div>
+                <span className="system-readout text-[10px] text-[#06B6D4] font-black tracking-widest">
+                  {Math.floor((user.currentXp / xpMax) * 100)}%_SYNC
+                </span>
               </div>
               {/* Compact rank progression HUD — shows XP gate toward next rank */}
               {(() => {
@@ -292,10 +433,20 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                 <div className="absolute top-4 right-4 w-2 h-2 bg-[#EF4444] rounded-full shadow-[0_0_10px_#EF4444] animate-pulse" />
              </button>
              
-             <button onClick={() => setShowWorkout(true)} 
-                     className="px-8 py-4 bg-gradient-to-r from-[#06B6D4] to-[#38BDF8] text-[#030308] font-orbitron font-black text-[11px] tracking-[0.3em] rounded-2xl shadow-[0_15px_35px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-t border-white/20">
-                <Plus size={18} strokeWidth={4} />
-                ARISE
+             <button
+               onClick={() => setShowWorkout(true)}
+               className="relative px-8 py-4 text-[#030308] font-orbitron font-black text-[11px] tracking-[0.3em] rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 overflow-hidden group"
+               style={{
+                 background: "linear-gradient(135deg, #06B6D4, #38BDF8, #7C3AED)",
+                 backgroundSize: "200% 200%",
+                 animation: "header-gradient-shift 4s ease infinite",
+                 boxShadow: "0 15px 35px rgba(6,182,212,0.4), 0 5px 15px rgba(124,58,237,0.2), inset 0 1px 0 rgba(255,255,255,0.25)",
+               }}
+             >
+               {/* Shimmer sweep */}
+               <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+               <Plus size={18} strokeWidth={4} className="relative z-10" />
+               <span className="relative z-10">ARISE</span>
              </button>
           </div>
         </header>
@@ -305,20 +456,66 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
           <AnimatePresence mode="wait">
             {activeTab === "STATUS" && (
               <motion.div key="status" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-7xl mx-auto space-y-12">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                   {[
-                    { label: "STRENGTH", val: stats.strength, icon: <Zap size={22} />, color: "text-[#EF4444]", glow: "shadow-[0_0_30px_rgba(239,68,68,0.2)]" },
-                    { label: "AGILITY", val: stats.agility, icon: <Sparkles size={22} />, color: "text-[#38BDF8]", glow: "shadow-[0_0_30px_rgba(56,189,248,0.2)]" },
-                    { label: "VITALITY", val: stats.vitality, icon: <Shield size={22} />, color: "text-[#22C55E]", glow: "shadow-[0_0_30px_rgba(34,197,94,0.2)]" },
-                    { label: "INTEL", val: stats.intelligence, icon: <Activity size={22} />, color: "text-[#A855F7]", glow: "shadow-[0_0_30px_rgba(168,85,247,0.2)]" },
+                    { label: "STRENGTH",  val: stats.strength,     hexColor: "#EF4444", icon: <Zap size={20} /> },
+                    { label: "AGILITY",   val: stats.agility,      hexColor: "#38BDF8", icon: <Sparkles size={20} /> },
+                    { label: "VITALITY",  val: stats.vitality,     hexColor: "#22C55E", icon: <Shield size={20} /> },
+                    { label: "INTEL",     val: stats.intelligence, hexColor: "#A855F7", icon: <Activity size={20} /> },
                   ].map((s) => (
-                    <div key={s.label} className={cn("system-panel p-8 relative group transition-all hover:bg-white/[0.04]", s.glow)}>
-                       <div className="flex justify-between items-start mb-8">
-                          <span className="system-readout text-[11px] text-[#94A3B8] font-black tracking-widest">{s.label}</span>
-                          <span className={cn("transition-all group-hover:scale-125 duration-700", s.color)}>{s.icon}</span>
-                       </div>
-                       <div className="text-5xl font-orbitron font-black text-[#E2E8F0] tracking-widest">{s.val}</div>
-                       <div className="mt-6 h-[2px] w-0 group-hover:w-full bg-current transition-all duration-700 opacity-20" />
+                    <div
+                      key={s.label}
+                      className="relative group transition-all duration-500 hover:-translate-y-1 cursor-default"
+                      style={{
+                        background: `rgba(8,5,20,0.85)`,
+                        backdropFilter: "blur(12px)",
+                        border: `1px solid ${s.hexColor}20`,
+                        borderRadius: "20px",
+                        padding: "28px",
+                        boxShadow: `0 0 0 0 ${s.hexColor}00`,
+                        transition: "all 0.4s cubic-bezier(0.4,0,0.2,1)",
+                      }}
+                      onMouseEnter={e => {
+                        const el = e.currentTarget as HTMLElement;
+                        el.style.borderColor = `${s.hexColor}40`;
+                        el.style.boxShadow = `0 0 30px ${s.hexColor}20, 0 10px 30px rgba(0,0,0,0.5)`;
+                      }}
+                      onMouseLeave={e => {
+                        const el = e.currentTarget as HTMLElement;
+                        el.style.borderColor = `${s.hexColor}20`;
+                        el.style.boxShadow = `0 0 0 0 ${s.hexColor}00`;
+                      }}
+                    >
+                      {/* Corner top-left accent */}
+                      <div className="absolute top-0 left-0 w-4 h-4" style={{ borderTop: `2px solid ${s.hexColor}40`, borderLeft: `2px solid ${s.hexColor}40`, borderTopLeftRadius: "20px" }} />
+                      {/* Corner bottom-right accent */}
+                      <div className="absolute bottom-0 right-0 w-4 h-4" style={{ borderBottom: `2px solid ${s.hexColor}20`, borderRight: `2px solid ${s.hexColor}20`, borderBottomRightRadius: "20px" }} />
+
+                      <div className="flex justify-between items-start mb-6">
+                        <span className="system-readout text-[10px] text-[#94A3B8] font-black tracking-widest">{s.label}</span>
+                        <span
+                          className="transition-transform group-hover:scale-125 duration-500"
+                          style={{ color: s.hexColor, filter: `drop-shadow(0 0 6px ${s.hexColor}80)` }}
+                        >
+                          {s.icon}
+                        </span>
+                      </div>
+                      <div
+                        className="text-5xl font-orbitron font-black tracking-widest mb-5"
+                        style={{ color: "#E2E8F0", textShadow: `0 0 20px ${s.hexColor}30` }}
+                      >
+                        {s.val}
+                      </div>
+                      {/* Animated stat bar */}
+                      <div className="h-[2px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(100, (s.val / 100) * 100)}%` }}
+                          transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+                          className="h-full"
+                          style={{ background: `linear-gradient(90deg, ${s.hexColor}80, ${s.hexColor})`, boxShadow: `0 0 8px ${s.hexColor}60` }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -333,25 +530,57 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
                             </div>
                             <div className="flex flex-col items-end">
                               <span className="system-readout text-[10px] text-[#EF4444] font-black animate-pulse uppercase tracking-widest">PENALTY_IMMESH_RISK</span>
-                              <span className="system-readout text-[14px] text-white font-black mt-1 tabular-nums">18:42:09</span>
+                              <span className="system-readout text-[14px] text-white font-black mt-1 tabular-nums">{penaltyCountdown}</span>
                             </div>
                          </div>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {(dailyQuests || []).slice(0, 4).map((q: any) => (
-                              <div key={q.id} className="p-8 bg-[#030308] border border-white/5 rounded-[24px] hover:border-[#7C3AED]/50 transition-all duration-500 flex items-center gap-8 group cursor-pointer relative overflow-hidden">
-                                 <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                 <div className="text-5xl filter grayscale group-hover:grayscale-0 group-hover:scale-125 transition-all duration-500 relative z-10">{q.icon}</div>
-                                 <div className="flex-1 min-w-0 relative z-10">
-                                    <div className="flex justify-between items-end mb-3">
-                                       <span className="system-readout text-[13px] font-black text-[#E2E8F0] uppercase tracking-wide">{q.name}</span>
-                                       <span className="system-readout text-[12px] text-[#06B6D4] font-black tabular-nums">{q.current || 0}/{q.target}</span>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {(dailyQuests || []).slice(0, 4).map((q: any) => {
+                              const pct = Math.min(100, ((q.current || 0) / q.target) * 100);
+                              const isComplete = pct >= 100;
+                              const diffColor = q.difficulty === "HARD" ? "#EF4444" : q.difficulty === "EASY" ? "#10B981" : "#06B6D4";
+                              return (
+                                <div
+                                  key={q.id}
+                                  className="flex items-center gap-5 group cursor-pointer relative overflow-hidden transition-all duration-500"
+                                  style={{
+                                    padding: "20px",
+                                    background: isComplete ? "rgba(6,182,212,0.04)" : "rgba(3,3,8,0.8)",
+                                    border: `1px solid ${isComplete ? "rgba(6,182,212,0.2)" : "rgba(255,255,255,0.05)"}`,
+                                    borderLeft: `3px solid ${isComplete ? "#06B6D4" : diffColor}`,
+                                    borderRadius: "20px",
+                                    boxShadow: isComplete ? "0 0 20px rgba(6,182,212,0.08)" : "none",
+                                    animation: !isComplete ? "quest-border-pulse 3s ease-in-out infinite" : "none",
+                                  }}
+                                >
+                                  <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                  <div className="text-4xl filter grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500 relative z-10">{q.icon}</div>
+                                  <div className="flex-1 min-w-0 relative z-10">
+                                    <div className="flex justify-between items-end mb-2">
+                                      <span className="system-readout text-[11px] font-black uppercase tracking-wide" style={{ color: isComplete ? "#06B6D4" : "#E2E8F0" }}>
+                                        {isComplete ? "✓ " : ""}{q.name}
+                                      </span>
+                                      <span className="system-readout text-[10px] font-black tabular-nums" style={{ color: isComplete ? "#06B6D4" : "#A855F7" }}>
+                                        {q.current || 0}/{q.target}
+                                      </span>
                                     </div>
-                                    <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/10">
-                                       <motion.div initial={{ width: 0 }} animate={{ width: `${(q.current/q.target)*100}%` }} className="h-full bg-gradient-to-r from-[#7C3AED] to-[#06B6D4] shadow-[0_0_15px_#7C3AED]" />
+                                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                      <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${pct}%` }}
+                                        transition={{ duration: 1, ease: "easeOut" }}
+                                        className="h-full"
+                                        style={{
+                                          background: isComplete
+                                            ? "linear-gradient(90deg, #06B6D4, #38BDF8)"
+                                            : `linear-gradient(90deg, #7C3AED, #06B6D4)`,
+                                          boxShadow: isComplete ? "0 0 10px rgba(6,182,212,0.6)" : "0 0 8px rgba(124,58,237,0.5)",
+                                        }}
+                                      />
                                     </div>
-                                 </div>
-                              </div>
-                            ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
                          </div>
                       </div>
                       <ErrorBoundary><BossEvent state={state} dispatch={dispatch} onChapterUnlocked={handleChapterUnlocked} /></ErrorBoundary>
@@ -707,9 +936,16 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
 
       {/* ── MOBILE BOTTOM NAV ── */}
       <nav
-        className="flex lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#080514]/95 backdrop-blur-3xl border-t border-[#7C3AED]/20"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="flex lg:hidden fixed bottom-0 left-0 right-0 z-50 backdrop-blur-3xl"
+        style={{
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          background: "rgba(8,5,20,0.97)",
+          borderTop: "1px solid rgba(124,58,237,0.2)",
+        }}
       >
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: "linear-gradient(to right, transparent, rgba(124,58,237,0.5), transparent)" }} />
+
         {MOBILE_TABS.map(tab => (
           <button
             key={tab.id}
@@ -717,15 +953,31 @@ export default function Dashboard({ state, dispatch }: DashboardProps) {
               setActiveTab(tab.id as "STATUS" | "SHADOWS" | "STORAGE" | "GATES" | "ARENA");
               systemAudio?.playClick();
             }}
-            className={cn(
-              "flex-1 flex flex-col items-center py-3 gap-1 transition-all",
-              activeTab === tab.id
-                ? "text-[#7C3AED] drop-shadow-[0_0_8px_rgba(124,58,237,0.8)]"
-                : "text-[#94A3B8] hover:text-[#E2E8F0]"
-            )}
+            className="flex-1 flex flex-col items-center py-3 gap-1 transition-all relative"
           >
-            {tab.icon}
-            <span className="text-[8px] font-orbitron font-black tracking-widest uppercase">{tab.label}</span>
+            {/* Active glow indicator dot above icon */}
+            {activeTab === tab.id && (
+              <motion.div
+                layoutId="mobile-nav-dot"
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full"
+                style={{ background: "#7C3AED", boxShadow: "0 0 8px rgba(124,58,237,0.8)" }}
+              />
+            )}
+            <span
+              style={{
+                color: activeTab === tab.id ? "#7C3AED" : "#94A3B8",
+                filter: activeTab === tab.id ? "drop-shadow(0 0 8px rgba(124,58,237,0.8))" : "none",
+                transition: "all 0.3s ease",
+              }}
+            >
+              {tab.icon}
+            </span>
+            <span
+              className="text-[8px] font-orbitron font-black tracking-widest uppercase"
+              style={{ color: activeTab === tab.id ? "#7C3AED" : "#94A3B8" }}
+            >
+              {tab.label}
+            </span>
           </button>
         ))}
       </nav>

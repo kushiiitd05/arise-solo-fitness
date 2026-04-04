@@ -54,8 +54,11 @@ export async function POST(req: NextRequest) {
   const resolvedName = (opponentName as string) || opponent.name;
   const resolvedRank = (opponentRank as string) || opponent.rank;
 
-  // 3. Compute battle result
-  const castedExercise = exercise as BattleExercise;
+  // 3. Validate and compute battle result
+  const VALID_EXERCISES: BattleExercise[] = ["PUSH-UPS", "SQUATS", "SIT-UPS", "PLANKS"];
+  const castedExercise = (VALID_EXERCISES.includes(exercise as BattleExercise)
+    ? exercise
+    : "PUSH-UPS") as BattleExercise;
   const maxReps = (TARGET_REPS[castedExercise] ?? 50) * 5;
   const safeReps = Math.min(Number(repsSubmitted), maxReps); // cheating protection: cap at 5× target
 
@@ -119,8 +122,11 @@ export async function POST(req: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     await fetch(`${baseUrl}/api/xp/award`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, amount: xpChange, reason: "arena_battle" }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${userId}`,
+      },
+      body: JSON.stringify({ amount: xpChange, reason: "arena_battle" }),
     }).catch((err) => console.error("[arena/battle] XP award chain failed:", err));
   }
 

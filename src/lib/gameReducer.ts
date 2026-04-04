@@ -183,7 +183,7 @@ export const initialState: GameState = {
 // ────────────────────────────────────────────
 
 type Action =
-  | { type: "AWAKEN"; payload: { username: string; jobClass: string } }
+  | { type: "AWAKEN"; payload: { username: string; jobClass: string; id?: string } }
   | { type: "SET_USER"; payload: Partial<GameState["user"]> }
   | { type: "SET_DATA"; payload: Partial<GameState> }
   | { type: "ADD_XP"; payload: number }
@@ -215,6 +215,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         ...state,
         user: {
           ...state.user,
+          ...(action.payload.id ? { id: action.payload.id } : {}),
           username: action.payload.username,
           jobClass: action.payload.jobClass,
           rank, title: titleForRank(rank),

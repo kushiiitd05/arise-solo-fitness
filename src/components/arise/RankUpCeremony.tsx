@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { RANK_COLORS } from "@/lib/constants";
@@ -19,6 +19,8 @@ export default function RankUpCeremony({
   const oldColor = RANK_COLORS[oldRank as keyof typeof RANK_COLORS] ?? "#9ca3af";
   const newColor = RANK_COLORS[newRank as keyof typeof RANK_COLORS] ?? "#22c55e";
 
+  const burstCanvasRef = useRef<HTMLCanvasElement>(null);
+
   // Fire rank-up notification once on mount
   useEffect(() => {
     dispatch({
@@ -33,7 +35,104 @@ export default function RankUpCeremony({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // intentionally no deps — fires once
 
+  useEffect(() => {
+    const canvas = burstCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    interface BurstParticle {
+      x: number; y: number;
+      vx: number; vy: number;
+      radius: number;
+      alpha: number;
+      color: string;
+    }
+
+    const rankHex = newColor; // from closure
+    const particles: BurstParticle[] = [];
+    for (let i = 0; i < 120; i++) {
+      const angle = (i / 120) * Math.PI * 2 + Math.random() * 0.3;
+      const speed = 3 + Math.random() * 8;
+      particles.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius: 2 + Math.random() * 4,
+        alpha: 1,
+        color: Math.random() > 0.4 ? rankHex : '#ffffff',
+      });
+    }
+
+    let shockRadius = 0;
+    let shockAlpha = 1;
+    let startTime = performance.now();
+    let animId: number;
+
+    function draw() {
+      const elapsed = (performance.now() - startTime) / 1000;
+      if (elapsed > 2.5) {
+        cancelAnimationFrame(animId);
+        ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+        return;
+      }
+
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+
+      // Shockwave ring
+      shockRadius = elapsed * 600;
+      shockAlpha = Math.max(0, 1 - elapsed * 1.5);
+      if (shockAlpha > 0) {
+        ctx!.beginPath();
+        ctx!.arc(cx, cy, shockRadius, 0, Math.PI * 2);
+        ctx!.strokeStyle = rankHex;
+        ctx!.globalAlpha = shockAlpha * 0.6;
+        ctx!.lineWidth = 3 * shockAlpha;
+        ctx!.shadowColor = rankHex;
+        ctx!.shadowBlur = 20;
+        ctx!.stroke();
+        ctx!.shadowBlur = 0;
+        ctx!.globalAlpha = 1;
+      }
+
+      // Particles
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15; // gravity
+        p.alpha = Math.max(0, 1 - elapsed / 2.5);
+        p.radius *= 0.99;
+
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx!.fillStyle = p.color;
+        ctx!.globalAlpha = p.alpha;
+        ctx!.shadowColor = p.color;
+        ctx!.shadowBlur = 8;
+        ctx!.fill();
+        ctx!.shadowBlur = 0;
+      }
+      ctx!.globalAlpha = 1;
+
+      animId = requestAnimationFrame(draw);
+    }
+
+    draw();
+    return () => cancelAnimationFrame(animId);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
+    <>
+    <canvas
+      ref={burstCanvasRef}
+      className="fixed inset-0 pointer-events-none"
+      style={{ zIndex: 199 }}
+    />
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -136,5 +235,6 @@ export default function RankUpCeremony({
         ACKNOWLEDGE RANK UP
       </motion.button>
     </motion.div>
+    </>
   );
 }

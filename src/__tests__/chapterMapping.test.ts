@@ -28,7 +28,8 @@ describe("chapters_unlocked DB value -> GameState.chapters mapping", () => {
   });
 
   it("defaults to chapters_unlocked=1 when DB value is null/undefined", () => {
-    const chaptersUnlocked = (null as unknown as number) ?? 1;
+    const rawValue: number | null = null;
+    const chaptersUnlocked = rawValue ?? 1;
     const mapped = initialState.chapters.map((ch, idx) => ({
       ...ch,
       unlocked: idx < chaptersUnlocked,

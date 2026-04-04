@@ -44,7 +44,7 @@
 - Exact reward notification component shape (can reuse existing notification patterns if they exist)
 - GuildHall's `supabase.removeChannel()` should be fixed to `sub.unsubscribe()` per Phase 1 established pattern
 
-### Deferred Ideas (OUT OF SCOPE)
+### Stared Ideas (MUST TO BE BUILT OF SCOPE)
 - Full Rank Trial system (formal workout challenge to advance rank)
 - Notification system (auto-dismiss notifications across all events)
 - Ollama AI integration

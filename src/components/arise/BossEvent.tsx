@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Users, Swords, Shield, Lock, AlertTriangle, X, Trophy, RotateCcw } from "lucide-react";
 import { getActiveBoss, subscribeToBossUpdates, dealDamage, awardRaidReward, BOSS_RANK_XP } from "@/lib/services/bossService";
@@ -228,6 +228,92 @@ export default function BossEvent({ state, dispatch, onChapterUnlocked }: BossEv
     });
   }, [boss?.id]); // dep: boss.id only — stable, prevents re-fire on HP updates
 
+  const burstCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!showVictory) return;
+    const canvas = burstCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    interface Particle {
+      x: number; y: number;
+      vx: number; vy: number;
+      radius: number;
+      alpha: number;
+      color: string;
+    }
+
+    const BURST_COLORS = ['#ef4444', '#f97316', '#fbbf24', '#ff6666', '#ffffff'];
+    const particles: Particle[] = [];
+    for (let i = 0; i < 150; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 10;
+      particles.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 2,
+        radius: 2 + Math.random() * 5,
+        alpha: 1,
+        color: BURST_COLORS[Math.floor(Math.random() * BURST_COLORS.length)],
+      });
+    }
+
+    let startTime = performance.now();
+    let animId: number;
+
+    function draw() {
+      const elapsed = (performance.now() - startTime) / 1000;
+      if (elapsed > 3) {
+        cancelAnimationFrame(animId);
+        ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+        return;
+      }
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+
+      // Expanding ring
+      const ringAlpha = Math.max(0, 1 - elapsed * 1.2);
+      if (ringAlpha > 0) {
+        ctx!.beginPath();
+        ctx!.arc(cx, cy, elapsed * 500, 0, Math.PI * 2);
+        ctx!.strokeStyle = '#ef4444';
+        ctx!.globalAlpha = ringAlpha * 0.5;
+        ctx!.lineWidth = 4 * ringAlpha;
+        ctx!.shadowColor = '#ef4444';
+        ctx!.shadowBlur = 30;
+        ctx!.stroke();
+        ctx!.shadowBlur = 0;
+        ctx!.globalAlpha = 1;
+      }
+
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.2;
+        p.alpha = Math.max(0, 1 - elapsed / 3);
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, Math.max(0.1, p.radius * (1 - elapsed / 4)), 0, Math.PI * 2);
+        ctx!.fillStyle = p.color;
+        ctx!.globalAlpha = p.alpha;
+        ctx!.shadowColor = p.color;
+        ctx!.shadowBlur = 6;
+        ctx!.fill();
+        ctx!.shadowBlur = 0;
+      }
+      ctx!.globalAlpha = 1;
+      animId = requestAnimationFrame(draw);
+    }
+
+    draw();
+    return () => cancelAnimationFrame(animId);
+  }, [showVictory]);
+
   const spawnFloatingDmg = (dmg: number) => {
     const id = Date.now();
     const x = 30 + Math.random() * 40;
@@ -319,6 +405,12 @@ export default function BossEvent({ state, dispatch, onChapterUnlocked }: BossEv
       {/* Victory screen */}
       <AnimatePresence>
         {showVictory && (
+          <>
+          <canvas
+            ref={burstCanvasRef}
+            className="fixed inset-0 pointer-events-none"
+            style={{ zIndex: 54 }}
+          />
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[55] bg-black/95 backdrop-blur-xl flex items-center justify-center">
             <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -341,6 +433,7 @@ export default function BossEvent({ state, dispatch, onChapterUnlocked }: BossEv
               </button>
             </motion.div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
 

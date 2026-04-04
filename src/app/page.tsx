@@ -241,7 +241,7 @@ export default function Home() {
     const { data: { session } } = await supabase.auth.getSession();
     
     // Dispatch immediate local state to unblock UI
-    dispatch({ type: "AWAKEN", payload: { username, jobClass } });
+    dispatch({ type: "AWAKEN", payload: { username, jobClass, id: session?.user?.id } });
 
     if (session?.user) {
       try {

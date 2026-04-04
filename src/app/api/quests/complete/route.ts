@@ -6,9 +6,16 @@ function today() {
   return new Date().toISOString().split("T")[0];
 }
 
+function getUserId(req: NextRequest): string | null {
+  const auth = req.headers.get("authorization");
+  if (auth?.startsWith("Bearer ")) return auth.slice(7);
+  return null;
+}
+
 export async function POST(req: NextRequest) {
+  const userId = getUserId(req);
   const body = await req.json().catch(() => null);
-  const { userId, questId } = body || {};
+  const { questId } = body || {};
   if (!userId || !questId) {
     return NextResponse.json({ error: "Missing userId or questId" }, { status: 400 });
   }

@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     strength: 10, vitality: 10, agility: 10,
     intelligence: 10, perception: 10, sense: 10,
     available_stat_points: 0,
-    total_workouts_completed: 0, current_streak: 0,
+    total_workouts: 0, current_streak: 0,
     longest_streak: 0, total_calories_burned: 0,
     total_xp_earned: 0, pvp_rating: 1000, pvp_wins: 0, pvp_losses: 0,
   });
