@@ -29,15 +29,36 @@ CREATE TABLE IF NOT EXISTS "arena_battles" (
 
 CREATE INDEX IF NOT EXISTS "arena_battles_user_id_idx" ON "arena_battles"("user_id");
 
-ALTER TABLE "arena_battles"
-  ADD CONSTRAINT IF NOT EXISTS "arena_battles_user_id_fkey"
-  FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint c
+    WHERE c.conname = 'arena_battles_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.arena_battles
+      ADD CONSTRAINT arena_battles_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+  END IF;
+END $$;
 
 ALTER TABLE public.arena_battles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can read their own battle history"
-  ON public.arena_battles FOR SELECT
-  USING (auth.uid() = user_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'arena_battles'
+      AND policyname = 'Users can read their own battle history'
+  ) THEN
+    CREATE POLICY "Users can read their own battle history"
+      ON public.arena_battles
+      FOR SELECT
+      USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
 -- ── 4. Exercise guides table ────────────────────────────────────
 CREATE TABLE IF NOT EXISTS "exercise_guides" (
@@ -49,9 +70,21 @@ CREATE TABLE IF NOT EXISTS "exercise_guides" (
 
 ALTER TABLE public.exercise_guides ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Authenticated users can read exercise guides"
-  ON public.exercise_guides FOR SELECT
-  USING (auth.role() = 'authenticated');
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'exercise_guides'
+      AND policyname = 'Authenticated users can read exercise guides'
+  ) THEN
+    CREATE POLICY "Authenticated users can read exercise guides"
+      ON public.exercise_guides
+      FOR SELECT
+      USING (auth.role() = 'authenticated');
+  END IF;
+END $$;
 
 -- ── 5. User exercise images table ──────────────────────────────
 CREATE TABLE IF NOT EXISTS "user_exercise_images" (
@@ -66,9 +99,21 @@ CREATE TABLE IF NOT EXISTS "user_exercise_images" (
 
 ALTER TABLE public.user_exercise_images ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can read their own exercise images"
-  ON public.user_exercise_images FOR SELECT
-  USING (auth.uid() = user_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'user_exercise_images'
+      AND policyname = 'Users can read their own exercise images'
+  ) THEN
+    CREATE POLICY "Users can read their own exercise images"
+      ON public.user_exercise_images
+      FOR SELECT
+      USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
 -- ── 6. Add mana_spent to user_stats ────────────────────────────
 ALTER TABLE "user_stats" ADD COLUMN IF NOT EXISTS "mana_spent" INTEGER NOT NULL DEFAULT 0;
@@ -95,7 +140,8 @@ VALUES
   ('a1b2c3d4-0017-0000-0000-000000000017', 'Shadow Knight',  'C'::"HunterRank", 'SOLDIER'::"ShadowType",    200, '{"name": "Knight Guard"}',        'UNCOMMON'::"ItemRarity",  '🛡️', true)
 ON CONFLICT ("id") DO NOTHING;
 
--- ── 8. Auth trigger (fixed $$ syntax) ──────────────────────────
+-- ── 8. Auth trigger ─────────────────────────────────────────────
+-- NOTE: live schema uses "total_workouts" (not "total_workouts_completed")
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -113,7 +159,7 @@ BEGIN
   INSERT INTO public.user_stats (
     user_id,
     strength, vitality, agility, intelligence, perception, sense,
-    available_stat_points, total_workouts_completed, current_streak, pvp_rating
+    available_stat_points, total_workouts, current_streak, pvp_rating
   )
   VALUES (NEW.id, 10, 10, 10, 10, 10, 10, 0, 0, 0, 1000)
   ON CONFLICT (user_id) DO NOTHING;
@@ -127,10 +173,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- ── 9. Add mana_spent to user_stats (used by visual-unlock) ───
-ALTER TABLE "user_stats" ADD COLUMN IF NOT EXISTS "mana_spent" INTEGER NOT NULL DEFAULT 0;
-
--- ── 10. Seed user_stats for existing users (backfill, live schema) ─
+-- ── 9. Seed user_stats for existing users (backfill) ───────────
 INSERT INTO public.user_stats (
   user_id,
   strength, vitality, agility, intelligence, perception, sense,

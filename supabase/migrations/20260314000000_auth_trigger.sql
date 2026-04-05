@@ -22,15 +22,11 @@ BEGIN
 
   -- 2. Initialize user stats
   INSERT INTO public.user_stats (
-    user_id, 
-    strength, vitality, agility, intelligence, perception, sense, 
+    user_id,
+    strength, vitality, agility, intelligence, perception, sense,
     available_stat_points, total_workouts, current_streak, pvp_rating
   )
-  VALUES (
-    NEW.id,
-    10, 10, 10, 10, 10, 10,
-    0, 0, 0, 1000
-  )
+  VALUES (NEW.id, 10, 10, 10, 10, 10, 10, 0, 0, 0, 1000)
   ON CONFLICT (user_id) DO NOTHING;
 
   RETURN NEW;
